@@ -7,7 +7,7 @@ const prompt = require('prompt-sync')();
 const org = prompt('Enter the Apigee Edge Organization name to get the Company records from:')
 const token = prompt('Enter your Apigee Edge OAuth2 token:');
 const apigee_x_project = prompt('Enter the Apigee X Project to load the transformed AppGroups into:')
-const gcp_token = prompt('Enter the GCP AOuth2 token:')
+const gcp_token = prompt('Enter the GCP OAuth2 token:')
 
 //Extract - get Company records and save them to a local file.
 //Set variables for the API call from user input to get Company records from Apigee Edge.
@@ -93,7 +93,7 @@ function load(apigee_x_project, gcp_token){
 
   //convert dataSet to JSON
   const appGroup_data = JSON.parse(dataSet);
-  console.log(appGroup_data.appGroups[1])
+  console.log(appGroup_data.appGroups)
 
   //Create appGroups iteratively
   var numAppGroups = appGroup_data.appGroups.length
@@ -119,4 +119,4 @@ function load(apigee_x_project, gcp_token){
 }
 
 extract(org,token,transform)
-//load(apigee_x_project,gcp_token)
+load(apigee_x_project,gcp_token)
