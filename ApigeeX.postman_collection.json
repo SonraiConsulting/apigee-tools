@@ -1,0 +1,4478 @@
+{
+	"info": {
+		"_postman_id": "d44ecde7-4710-48be-8719-b28a1422ab75",
+		"name": "ApigeeX",
+		"description": "We have developed this Apigee API collection for use against ApigeeX instances.\n\n## Getting Started\n\nHere's how to get started.\n\n1. Go to the GCP console and generate an OAuth2 token from the Terminal (make sure you have access to the Apigee instance and are switched to that project)\n2. Using the OAuth2 token, save it to an Environment variable called `gcp_oauth_token`.\n3. Fill in other environment variables as you need them, such as {{org}} for the Apigee X project and {{env}} for the environment.\n    \n4. Now use the requests as shown in the collection.\n    \n\nWe hope you enjoy the collection, and please send us any feedback or if you'd like further details on the services we offer.\n\n### Contact us at: [info@sonrai.com.au](https://desktop.postman.com/?desktopVersion=9.22.2&userId=8084908&teamId=430530)\n\n### [Sonrai Consulting Pty Ltd](https://sonrai.com.au)\n\n## Further detail\n\nSee API documentation for more details and for API calls missing from this collection:\n\n[https://cloud.google.com/apigee/docs/reference/apis/apigee/rest](https://cloud.google.com/apigee/docs/reference/apis/apigee/rest)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8084908",
+		"_collection_link": "https://sonrai.postman.co/workspace/Sonrai-Consulting-Workspace~a7035900-1130-424f-8466-84c5fbf655c9/collection/8084908-d44ecde7-4710-48be-8719-b28a1422ab75?action=share&source=collection_link&creator=8084908"
+	},
+	"item": [
+		{
+			"name": "ApigeeX API Management",
+			"item": [
+				{
+					"name": "Getting Started",
+					"item": [
+						{
+							"name": "Generate GCP OAuth Token (with JWT script)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// JWT generation script adapted from\r",
+											"// https://gist.github.com/corbanb/db03150abbe899285d6a86cc480f674d\r",
+											"\r",
+											"var jwtSecret = pm.environment.get('jwt_private_key') || ''\r",
+											"\r",
+											"// Set headers for JWT. Google service acounts rely on RSA SHA-256 and JWT token format\r",
+											"var header = {\r",
+											"\t'typ': 'JWT',\r",
+											"\t'alg': 'RS256'\r",
+											"};\r",
+											"\r",
+											"// Prepare timestamp in seconds\r",
+											"var currentTimestamp = Math.floor(Date.now() / 1000)\r",
+											"\r",
+											"var data = {\r",
+											"\t'iss': pm.environment.get('jwt_iss') || '',\r",
+											"    'scope': pm.environment.get('jwt_scope') || '',\r",
+											"    'aud': pm.environment.get('jwt_aud') || '',\r",
+											"    'exp': currentTimestamp + 3590, // expiry time is 3590 seconds from time of creation\r",
+											"\t'iat': currentTimestamp,\r",
+											"}\r",
+											"\r",
+											"\r",
+											"function base64url(source) {\r",
+											"    // Encode in classical base64\r",
+											"    encodedSource = CryptoJS.enc.Base64.stringify(source)\r",
+											"    \r",
+											"    // Remove padding equal characters\r",
+											"    encodedSource = encodedSource.replace(/=+$/, '')\r",
+											"    \r",
+											"    // Replace characters according to base64url specifications\r",
+											"    encodedSource = encodedSource.replace(/\\+/g, '-')\r",
+											"    encodedSource = encodedSource.replace(/\\//g, '_')\r",
+											"    \r",
+											"    return encodedSource\r",
+											"}\r",
+											"\r",
+											"// encode header\r",
+											"var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header))\r",
+											"var encodedHeader = base64url(stringifiedHeader)\r",
+											"\r",
+											"// encode data\r",
+											"var stringifiedData = CryptoJS.enc.Utf8.parse(JSON.stringify(data))\r",
+											"var encodedData = base64url(stringifiedData)\r",
+											"\r",
+											"// build token\r",
+											"var token = `${encodedHeader}.${encodedData}`\r",
+											"\r",
+											"// sign token\r",
+											"var signature = CryptoJS.HmacSHA256(token, jwtSecret)\r",
+											"signature = base64url(signature)\r",
+											"var signedToken = `${token}.${signature}`\r",
+											"\r",
+											"pm.environment.set('jwt_signed', signedToken)\r",
+											"console.log('Signed and encoded JWT', signedToken)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+											"description": "See https://developers.google.com/identity/protocols/oauth2/service-account#httprest",
+											"type": "text"
+										},
+										{
+											"key": "assertion",
+											"value": "{{jwt_signed}}",
+											"description": "Input valid JWT here",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://oauth2.googleapis.com/token",
+									"protocol": "https",
+									"host": [
+										"oauth2",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"token"
+									]
+								},
+								"description": "This Request generates an OAuth token without needing to get one manually from the GCP Console.\n\n1.  You will need to have generated a JWT Private Key from GCP using a GCP Service Account*, and store this in an Environment variable called `{{jwt_private_key}}`\n2.  You will also need to populate the following Environment variables:\n    1.  `jwt_iss` - issuer\n    2.  `jwt_scope` - scope\n    3.  `jwt_aud` - audience\n\nUse this, after you have got a JWT token from GCP, to generate an Oauth token direct from GCP\n\n*NOTE: The Service Account must have the required GCP permissions to access the ORG/Project for the Apigee instance.\n\nReference doco:\n\n*   [https://developers.google.com/identity/protocols/oauth2/service-account#httprest](https://developers.google.com/identity/protocols/oauth2/service-account#httprest)\n    \n\nAlt URLs:\n\n*   [https://oauth2.googleapis.com/token](https://oauth2.googleapis.com/token)\n*   [https://www.googleapis.com/oauth2/v4/token](https://www.googleapis.com/oauth2/v4/token)"
+							},
+							"response": []
+						},
+						{
+							"name": "Generate GCP OAuth Token",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+											"description": "See https://developers.google.com/identity/protocols/oauth2/service-account#httprest",
+											"type": "text"
+										},
+										{
+											"key": "assertion",
+											"value": "For example: ya29.a0AfB_byB-hije4AXmD_tZyVPdR5XX8p9GXdYlA5WEv0844Lh5_383sfnnhBBAvh_VhQZkhFdDVxXRvY6NGeR5a8qitPIKqTvC_nwpwYZ9buG1Qnw2ZlqnJDL2-8IrXtnaB1oS9OBGr07G71l39J-rl6isIqYNalVSDlUsQwh5jGjlw5XJEDPANHoddu_uC2auSdcUXOwggXFcIKXITd-1y5VvoLN8Bemmn5qg_vAex0G42YVQrw5XmgVKbdZ4gDOK9hNfWFq0dXj-9N4NVemccpmPMnTq5G0c50UHESdnfU150oLHjO38Kp87schAFkQY0hNSNsnjFxJ0KZLUaEu6TQsODZbxDaiYMSrNAP40q4oBjnd--cXEdlrzOC6Mfd_FFwo8iP0Ybr2Ol0LoQL--eXAChmAQrNA2jgaCgYKAXoSARASFQGOcNnCDVN_Q1Mi3zMgD70PgA9i1A0425",
+											"description": "Input valid JWT here, including the signature",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "https://oauth2.googleapis.com/token",
+									"protocol": "https",
+									"host": [
+										"oauth2",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"token"
+									]
+								},
+								"description": "Use this request, **after** you have got a JWT token from GCP. This will generate an Oauth token direct from GCP.\n\nTo get a valid JWT you will need the iss, scope, aud, exp and iat.\n\nExample JWT before base64-encoding:\n\n```\n{\"alg\":\"RS256\",\"typ\":\"JWT\"}.\n{\n\"iss\":\"761326798069-r5mljlln1rd4lrbhg75efgigp36m78j5@developer.gserviceaccount.com\",\n\"scope\":\"https://www.googleapis.com/auth/prediction\",\n\"aud\":\"https://oauth2.googleapis.com/token\",\n\"exp\":1328554385,\n\"iat\":1328550785\n}.\n[signature bytes]\n\n ```\n\nExample JWT after base64-encodoing:\n\n```\neyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3NjEzMjY3OTgwNjktcjVtbGpsbG4xcmQ0bHJiaGc3NWVmZ2lncDM2bTc4ajVAZGV2ZWxvcGVyLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJzY29wZSI6Imh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL2F1dGgvcHJlZGljdGlvbiIsImF1ZCI6Imh0dHBzOi8vd3d3Lmdvb2dsZWFwaXMuY29tL29hdXRoMi92NC90b2tlbiIsImV4cCI6MTMyODU1NDM4NSwiaWF0IjoxMzI4NTUwNzg1fQ.UFUt59SUM2_AW4cRU8Y0BYVQsNTo4n7AFsNrqOpYiICDu37vVt-tw38UKzjmUKtcRsLLjrR3gFW3dNDMx_pL9DVjgVHDdYirtrCekUHOYoa1CMR66nxep5q5cBQ4y4u2kIgSvChCTc9pmLLNoIem-ruCecAJYgI9Ks7pTnW1gkOKs0x3YpiLpzplVHAkkHztaXiJdtpBcY1OXyo6jTQCa3Lk2Q3va1dPkh_d--GU2M5flgd8xNBPYw4vxyt0mP59XZlHMpztZt0soSgObf7G3GXArreF_6tpbFsS3z2t5zkEiHuWJXpzcYr5zWTRPDEHsejeBSG8EgpLDce2380ROQ\n\n ```\n\n  \n**Reference doco:** [https://developers.google.com/identity/protocols/oauth2/service-account#httprest](https://developers.google.com/identity/protocols/oauth2/service-account#httprest)\n\n#### Alternative to this request\n\nAlternatively, to get started and make calls to the Apigee X API:\n\n1. Get a token:\n    1. From GCP Console:\n        1. Login to the GCP Console\n        2. Start a CLI session and switch to the Google cloud project you're running Apigee X from.\n        3. Run this command and save the GCP token:  \n            `gcloud auth application-default print-access-token`\n2. Use the token in a variable `{{gcp_oauth_token}}` as a bearer token in the subsequent requests in this collection.\n    \n\n**Alt OAuth2 URLs:**  \n[https://oauth2.googleapis.com/token](https://oauth2.googleapis.com/token)  \n[https://www.googleapis.com/oauth2/v4/token](https://www.googleapis.com/oauth2/v4/token)"
+							},
+							"response": []
+						}
+					],
+					"description": "Although you can use one of the following 2 requests to generate an OAuth token using a service account (and a JWT from the service account), it can be difficult to get a successful outcome.\n\nInstead we recommend you generate your own OAuth token from the GCP console using this command:\n\n`gcloud auth application-default print-access-token`\n\nThen simply paste the token into the Environment variable _gcp_oauth_token_"
+				},
+				{
+					"name": "Apps",
+					"item": [
+						{
+							"name": "List apps ",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apps",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apps"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "approved",
+											"description": "Optional. Values = \"approved\" or \"revoked\"",
+											"disabled": true
+										},
+										{
+											"key": "expand",
+											"value": "true",
+											"description": "Optional. Values = \"true\" or \"false\"",
+											"disabled": true
+										},
+										{
+											"key": "startKey",
+											"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+											"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+											"disabled": true
+										},
+										{
+											"key": "rows",
+											"value": "20",
+											"description": "limit the number of rows (maximum 1000)",
+											"disabled": true
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": [
+								{
+									"name": "List apps",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer {{gcp_oauth_token}}"
+											}
+										],
+										"url": {
+											"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apps?expand=true",
+											"protocol": "https",
+											"host": [
+												"apigee",
+												"googleapis",
+												"com"
+											],
+											"path": [
+												"v1",
+												"organizations",
+												"{{org}}",
+												"apps"
+											],
+											"query": [
+												{
+													"key": "status",
+													"value": "approved",
+													"description": "Optional. Values = \"approved\" or \"revoked\"",
+													"disabled": true
+												},
+												{
+													"key": "expand",
+													"value": "true",
+													"description": "Optional. Values = \"true\" or \"false\""
+												},
+												{
+													"key": "startKey",
+													"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+													"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+													"disabled": true
+												},
+												{
+													"key": "rows",
+													"value": "20",
+													"description": "limit the number of rows (maximum 1000)",
+													"disabled": true
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "X-Apigee-Backends",
+											"value": "hybrid-mart-server"
+										},
+										{
+											"key": "X-Apigee-User",
+											"value": "edge-gaambo-controlplane@system.gserviceaccount.com"
+										},
+										{
+											"key": "X-Apigee-Organization",
+											"value": "apigeex-sonrai"
+										},
+										{
+											"key": "Content-Type",
+											"value": "application/json; charset=UTF-8"
+										},
+										{
+											"key": "Vary",
+											"value": "Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "X-Origin"
+										},
+										{
+											"key": "Vary",
+											"value": "Referer"
+										},
+										{
+											"key": "Content-Encoding",
+											"value": "gzip"
+										},
+										{
+											"key": "Date",
+											"value": "Tue, 31 Oct 2023 06:38:12 GMT"
+										},
+										{
+											"key": "Server",
+											"value": "ESF"
+										},
+										{
+											"key": "Cache-Control",
+											"value": "private"
+										},
+										{
+											"key": "X-XSS-Protection",
+											"value": "0"
+										},
+										{
+											"key": "X-Frame-Options",
+											"value": "SAMEORIGIN"
+										},
+										{
+											"key": "X-Content-Type-Options",
+											"value": "nosniff"
+										},
+										{
+											"key": "Alt-Svc",
+											"value": "h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000"
+										},
+										{
+											"key": "Transfer-Encoding",
+											"value": "chunked"
+										}
+									],
+									"cookie": [],
+									"body": "{\n    \"app\": [\n        {\n            \"appId\": \"71dd012c-3de4-4755-865b-3b0399a41cb8\",\n            \"attributes\": [\n                {\n                    \"name\": \"DisplayName\",\n                    \"value\": \"This works.\"\n                },\n                {\n                    \"name\": \"Notes\",\n                    \"value\": \"bye bye\"\n                }\n            ],\n            \"createdAt\": \"1698733571318\",\n            \"credentials\": [\n                {\n                    \"apiProducts\": [\n                        {\n                            \"apiproduct\": \"Query Inventory\",\n                            \"status\": \"approved\"\n                        },\n                        {\n                            \"apiproduct\": \"Store Finder\",\n                            \"status\": \"approved\"\n                        }\n                    ],\n                    \"consumerKey\": \"iMnTW9qcvCre1gFnID3n4otAqA3L1j1DNc4ThazBYKCv871A\",\n                    \"consumerSecret\": \"xWQBG8ytAeWfpGOG6HM2dGxfzoYDgxOmZzGIvkQAGMuAU8FF0VvWSooZgdwxxX2a\",\n                    \"expiresAt\": \"-1\",\n                    \"issuedAt\": \"1698733571405\",\n                    \"status\": \"approved\"\n                }\n            ],\n            \"lastModifiedAt\": \"1698733571318\",\n            \"name\": \"this_works_\",\n            \"status\": \"approved\",\n            \"appGroup\": \"create_app_test\"\n        },\n        {\n            \"appId\": \"9b4ddb5c-8ae3-40b8-8e4e-ede07bcc86bd\",\n            \"attributes\": [\n                {\n                    \"name\": \"DisplayName\",\n                    \"value\": \"App X\"\n                },\n                {\n                    \"name\": \"Notes\",\n                    \"value\": \"appy X days\"\n                }\n            ],\n            \"createdAt\": \"1697681895250\",\n            \"credentials\": [\n                {\n                    \"apiProducts\": [\n                        {\n                            \"apiproduct\": \"Query Inventory\",\n                            \"status\": \"approved\"\n                        },\n                        {\n                            \"apiproduct\": \"Store Finder\",\n                            \"status\": \"approved\"\n                        }\n                    ],\n                    \"consumerKey\": \"x7g4F8IkVtyePyHWciX7M62UE6oINC9tAKoUnhnFUgsG4KeS\",\n                    \"consumerSecret\": \"slcWUHNsJAUwQC7Qa7hUNVucU7JakFItqtAQHAtixToOJbG08Pd3pMIvAeXlRxAw\",\n                    \"expiresAt\": \"-1\",\n                    \"issuedAt\": \"1697681895278\",\n                    \"status\": \"approved\"\n                }\n            ],\n            \"developerId\": \"77ed02a4-2141-4166-bb7d-60f07d7e9374\",\n            \"lastModifiedAt\": \"1697681895250\",\n            \"name\": \"app_x\",\n            \"status\": \"approved\"\n        }\n    ]\n}"
+								}
+							]
+						},
+						{
+							"name": "List a Developers Apps",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email/apps?expand=true",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email",
+										"apps"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "true",
+											"description": "Optional. Set to true to expand the results. This query parameter does not work if you use the count or startKey query parameters."
+										},
+										{
+											"key": "count",
+											"value": "",
+											"description": "Optional.\n\nThis parameter can be used with Apigee Edge for Public Cloud only.\n\nLimits the list to the number you specify. The limit is 100. Use with the startKey parameter to provide more targeted filtering.",
+											"disabled": true
+										},
+										{
+											"key": "startKey",
+											"value": "",
+											"description": "Optional.\n\nThis parameter can be used with Apigee Edge for Public Cloud only.\n\nTo filter the keys that are returned, enter the name of a company app that the list will start with. For example, if the an unfiltered list returns:\n\ndevapp1\ndevapp2\ndevapp3\n\nThen, if your startKey is devapp2, the returned list will be:\n\ndevapp2\ndevapp3",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": null,
+											"description": "Provide the developer email address"
+										}
+									]
+								},
+								"description": "Lists all apps created by a developer in an organization, and optionally provides an expanded view of the apps. All time values in the response are UNIX times. You can specify either the developer's email address or Edge ID.\nApigee recommends that you use the developer's email address when calling this API. Developer IDs are generated internally by Apigee and are not guaranteed to stay the same over time. \nA maximum of 100 developers are returned per API call.\nYou can paginate the list of companies returned using the startKey and count query parameters.\n \nDocumentation ref: https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/developers/%7Bdeveloper_email_or_id%7D/apps"
+							},
+							"response": []
+						},
+						{
+							"name": "App details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apps/:app",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apps",
+										":app"
+									],
+									"variable": [
+										{
+											"key": "app",
+											"value": "71dd012c-3de4-4755-865b-3b0399a41cb8",
+											"description": "Provide the app name"
+										}
+									]
+								},
+								"description": "  List out an app details"
+							},
+							"response": []
+						},
+						{
+							"name": "Add app credentials",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/xml"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<CredentialRequest>  \n            <Attributes/>\n            <ConsumerKey>_key_</ConsumerKey>\n            <ConsumerSecret>_secret_</ConsumerSecret>\n            <ApiProducts>\n            </ApiProducts>\n            <Scopes/>\n</CredentialRequest>\n"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email/apps/:app/keys/create",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email",
+										"apps",
+										":app",
+										"keys",
+										"create"
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": null,
+											"description": "Provide the developer email address"
+										},
+										{
+											"key": "app",
+											"value": null,
+											"description": "Provide the application name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Company APP",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/xml"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<App name=\"Companyapp1\">\n<AccessType>read</AccessType>\n\n\n<ApiProducts>\n<ApiProduct>base</ApiProduct>\n</ApiProducts>\n\n\n\n<AppFamily>Production</AppFamily>\n\n<Attributes>\n<Attribute>\n<Name>TropoAppToken</Name>\n<Value>\n98222c9d3bb44e9953438f86c661aaa3159f978814c10b9b6d4a70a0340039d46d3ab081c9e0198609e7850c\n</Value>\n</Attribute>\n<Attribute>\n<Name>shortcode</Name>\n<Value>37367045</Value>\n</Attribute>\n\n<Attribute>\n<Name>MMSURL</Name>\n<Value>https://api-dev-test.priv.bf.pacer.sl.attcompute.com/QAUtils/MOEndpoint</Value>\n</Attribute>\n\n<Attribute>\n<Name>SMSMOURL</Name>\n<Value>https://api-dev-test.priv.bf.pacer.sl.attcompute.com/QAUtils/MOEndpoint</Value>\n</Attribute>\n\n<Attribute>\n<Name>merchant_id</Name>\n<Value>d947b98e-950f-40c4-908a-28ce14ebe703</Value>\n</Attribute>\n\n</Attributes>\n\n<CallbackUrl>www.apigee.com</CallbackUrl>\n\n\n</App>\n"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/companies/:company/apps",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"companies",
+										":company",
+										"apps"
+									],
+									"variable": [
+										{
+											"key": "company",
+											"value": null,
+											"description": "Provide a company name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Total Traffic for Developer Apps",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/developer_app?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/03/2019%2023:59",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"developer_app"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "(developer_app%20eq%20'Victorian-Energy-Compare-App')",
+											"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific developer app name\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+											"disabled": true
+										},
+										{
+											"key": "select",
+											"value": "sum(message_count)",
+											"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+										},
+										{
+											"key": "timeRange",
+											"value": "12/01/2019%2000:00~12/03/2019%2023:59",
+											"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+										}
+									]
+								},
+								"description": "Average transactions per second (across all API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Consumption Data Product (AEMO Electricity Meter Reading Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "AppGroups",
+					"item": [
+						{
+							"name": "List appGroups",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/appgroups",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"appgroups"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "",
+											"description": "The filter expression to be used to get the list of AppGroups, where filtering can be done on status, channelId or channelUri of the app group. Examples: filter=status=active\", filter=channelId=, filter=channelUri=",
+											"disabled": true
+										},
+										{
+											"key": "pageSize",
+											"value": "3",
+											"description": "Count of AppGroups a single page can have in the response. If unspecified, at most 1000 AppGroups will be returned. The maximum value is 1000; values above 1000 will be coerced to 1000.",
+											"disabled": true
+										},
+										{
+											"key": "pageToken",
+											"value": "",
+											"description": "The starting index record for listing the AppGroups.",
+											"disabled": true
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "appGroup details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/appgroups/:app_group_name",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"appgroups",
+										":app_group_name"
+									],
+									"variable": [
+										{
+											"key": "app_group_name",
+											"value": "my_app_group",
+											"description": "AppGroup name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "List appGroups apps",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/appgroups/:app_group_name/apps",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"appgroups",
+										":app_group_name",
+										"apps"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "",
+											"description": "The filter expression to be used to get the list of AppGroups, where filtering can be done on status, channelId or channelUri of the app group. Examples: filter=status=active\", filter=channelId=, filter=channelUri=",
+											"disabled": true
+										},
+										{
+											"key": "pageSize",
+											"value": "3",
+											"description": "Count of AppGroups a single page can have in the response. If unspecified, at most 1000 AppGroups will be returned. The maximum value is 1000; values above 1000 will be coerced to 1000.",
+											"disabled": true
+										},
+										{
+											"key": "pageToken",
+											"value": "",
+											"description": "The starting index record for listing the AppGroups.",
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "app_group_name",
+											"value": "my_app_group",
+											"description": "AppGroup name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Create appGroup",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"sonrai_developers\",\r\n    \"displayName\": \"Sonrai Developers\",\r\n    \"status\" : \"active\",\r\n    \"attributes\" : [ {\r\n        \"name\" : \"__apigee_reserved__developer_details\",\r\n        \"value\" : \"[{\\\"developer\\\":\\\"info@sonrai.com.au\\\",\\\"roles\\\":[\\\"admin\\\"]}]\"\r\n    }, {\r\n        \"name\" : \"team_description\",\r\n        \"value\" : \"[{\\\"summary\\\":\\\"\\\",\\\"value\\\":\\\"\\\",\\\"format\\\":\\\"basic_html\\\",\\\"_original_delta\\\":0}]\"\r\n    } ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/appgroups",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"appgroups"
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete appGroup",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/appgroups/:app_group_name",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"appgroups",
+										":app_group_name"
+									],
+									"variable": [
+										{
+											"key": "app_group_name",
+											"value": "my_app_group",
+											"description": "AppGroup name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Analytics / Metrics API",
+					"item": [
+						{
+							"name": "Stats for API Proxies",
+							"item": [
+								{
+									"name": "Proxy3 API",
+									"item": [
+										{
+											"name": "Get API Proxy 3 Product - TPS",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json",
+														"type": "text"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer {{gcp_oauth_token}}",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'api_proxy_3')&select=tps&timeRange=03/01/2020%2000:00~03/15/2020%2023:59",
+													"protocol": "https",
+													"host": [
+														"apigee",
+														"googleapis",
+														"com"
+													],
+													"path": [
+														"v1",
+														"organizations",
+														"{{org}}",
+														"environments",
+														"{{env}}",
+														"stats",
+														"apiproxy"
+													],
+													"query": [
+														{
+															"key": "filter",
+															"value": "(apiproxy%20eq%20'api_proxy_3')"
+														},
+														{
+															"key": "select",
+															"value": "tps",
+															"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+														},
+														{
+															"key": "timeRange",
+															"value": "03/01/2020%2000:00~03/15/2020%2023:59",
+															"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+														}
+													]
+												},
+												"description": "Average transactions per second (across all API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Virtual Power Plant Product (AEMO VPP Operations Forecast Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+											},
+											"response": []
+										},
+										{
+											"name": "Get API Proxy 3 Product - MessageCount",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"type": "text",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer {{gcp_oauth_token}}",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'api_proxy_3')&select=sum(message_count)&timeRange=03/01/2020%2000:00~03/15/2020%2023:59",
+													"protocol": "https",
+													"host": [
+														"apigee",
+														"googleapis",
+														"com"
+													],
+													"path": [
+														"v1",
+														"organizations",
+														"{{org}}",
+														"environments",
+														"{{env}}",
+														"stats",
+														"apiproxy"
+													],
+													"query": [
+														{
+															"key": "filter",
+															"value": "(apiproxy%20eq%20'api_proxy_3')"
+														},
+														{
+															"key": "select",
+															"value": "sum(message_count)",
+															"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+														},
+														{
+															"key": "timeRange",
+															"value": "03/01/2020%2000:00~03/15/2020%2023:59",
+															"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+														}
+													]
+												},
+												"description": "Total number of messages (API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Virtual Power Plany Product (AEMO VPP Operations Forecast Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+											},
+											"response": []
+										},
+										{
+											"name": "Get API Proxy 3 Product - Error Count",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"type": "text",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer {{gcp_oauth_token}}",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'api_proxy_3')&select=sum(is_error)&timeRange=03/01/2020%2000:00~03/15/2020%2023:59",
+													"protocol": "https",
+													"host": [
+														"apigee",
+														"googleapis",
+														"com"
+													],
+													"path": [
+														"v1",
+														"organizations",
+														"{{org}}",
+														"environments",
+														"{{env}}",
+														"stats",
+														"apiproxy"
+													],
+													"query": [
+														{
+															"key": "filter",
+															"value": "(apiproxy%20eq%20'api_proxy_3')"
+														},
+														{
+															"key": "select",
+															"value": "sum(is_error)",
+															"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+														},
+														{
+															"key": "timeRange",
+															"value": "03/01/2020%2000:00~03/15/2020%2023:59",
+															"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+														}
+													]
+												},
+												"description": "Total number of messages (API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Virtual Power Plant Product (AEMO VPP Operations Forecast Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+											},
+											"response": []
+										}
+									]
+								},
+								{
+									"name": "Healthcheck API",
+									"item": [
+										{
+											"name": "Get Healthcheck API - TPS",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"value": "application/json",
+														"type": "text"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer {{gcp_oauth_token}}",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'healthcheck-v1')&select=tps&timeRange=7/6/2022%2014:00~7/7/2022%2013:59",
+													"protocol": "https",
+													"host": [
+														"apigee",
+														"googleapis",
+														"com"
+													],
+													"path": [
+														"v1",
+														"organizations",
+														"{{org}}",
+														"environments",
+														"{{env}}",
+														"stats",
+														"apiproxy"
+													],
+													"query": [
+														{
+															"key": "filter",
+															"value": "(apiproxy%20eq%20'healthcheck-v1')"
+														},
+														{
+															"key": "select",
+															"value": "tps",
+															"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+														},
+														{
+															"key": "timeRange",
+															"value": "7/6/2022%2014:00~7/7/2022%2013:59",
+															"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+														}
+													]
+												},
+												"description": "Average transactions per second (across all API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Virtual Power Plant Product (AEMO VPP Operations Forecast Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+											},
+											"response": []
+										},
+										{
+											"name": "Get Healthcheck API - MessageCount",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"type": "text",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer {{gcp_oauth_token}}",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'healthcheck-v1')&select=sum(message_count)&timeRange=7/6/2022%2014:00~7/7/2022%2013:59",
+													"protocol": "https",
+													"host": [
+														"apigee",
+														"googleapis",
+														"com"
+													],
+													"path": [
+														"v1",
+														"organizations",
+														"{{org}}",
+														"environments",
+														"{{env}}",
+														"stats",
+														"apiproxy"
+													],
+													"query": [
+														{
+															"key": "filter",
+															"value": "(apiproxy%20eq%20'healthcheck-v1')"
+														},
+														{
+															"key": "select",
+															"value": "sum(message_count)",
+															"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+														},
+														{
+															"key": "timeRange",
+															"value": "7/6/2022%2014:00~7/7/2022%2013:59",
+															"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+														}
+													]
+												},
+												"description": "Total number of messages (API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Virtual Power Plany Product (AEMO VPP Operations Forecast Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+											},
+											"response": []
+										},
+										{
+											"name": "Get Healthcheck API - Error Count",
+											"request": {
+												"auth": {
+													"type": "noauth"
+												},
+												"method": "GET",
+												"header": [
+													{
+														"key": "Content-Type",
+														"type": "text",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer {{gcp_oauth_token}}",
+														"type": "text"
+													}
+												],
+												"url": {
+													"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'healthcheck-v1')&select=sum(is_error)&timeRange=7/6/2022%2014:00~7/7/2022%2013:59",
+													"protocol": "https",
+													"host": [
+														"apigee",
+														"googleapis",
+														"com"
+													],
+													"path": [
+														"v1",
+														"organizations",
+														"{{org}}",
+														"environments",
+														"{{env}}",
+														"stats",
+														"apiproxy"
+													],
+													"query": [
+														{
+															"key": "filter",
+															"value": "(apiproxy%20eq%20'healthcheck-v1')"
+														},
+														{
+															"key": "select",
+															"value": "sum(is_error)",
+															"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+														},
+														{
+															"key": "timeRange",
+															"value": "7/6/2022%2014:00~7/7/2022%2013:59",
+															"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+														}
+													]
+												},
+												"description": "Total number of messages (API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Virtual Power Plant Product (AEMO VPP Operations Forecast Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+											},
+											"response": []
+										}
+									]
+								}
+							]
+						},
+						{
+							"name": "Analytics",
+							"item": [
+								{
+									"name": "Analytics API - export data",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{gcp_oauth_token}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/analytics/exports",
+											"protocol": "https",
+											"host": [
+												"apigee",
+												"googleapis",
+												"com"
+											],
+											"path": [
+												"v1",
+												"organizations",
+												"{{org}}",
+												"environments",
+												"{{env}}",
+												"analytics",
+												"exports"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "All Requests by API Proxy",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?select=sum(message_count)&timeRange=7/3/2022%2000:00~7/15/2022%2023:59&timeUnit=hour",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"apiproxy"
+									],
+									"query": [
+										{
+											"key": "select",
+											"value": "sum(message_count)"
+										},
+										{
+											"key": "timeRange",
+											"value": "7/3/2022%2000:00~7/15/2022%2023:59",
+											"description": "Time is UTC. Take AEST and take away 10 hours (or 11 in daylight savings)"
+										},
+										{
+											"key": "timeUnit",
+											"value": "hour"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 responses by API Proxy",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?select=sum(message_count)&timeRange=7/03/2022%2000:00~7/14/2022%2000:00&timeUnit=day&filter=(response_status_code eq 404)",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"apiproxy"
+									],
+									"query": [
+										{
+											"key": "select",
+											"value": "sum(message_count)"
+										},
+										{
+											"key": "timeRange",
+											"value": "7/03/2022%2000:00~7/14/2022%2000:00",
+											"description": "Time is UTC. Take AEST and take away 10 hours (or 11 in daylight savings)"
+										},
+										{
+											"key": "timeUnit",
+											"value": "day"
+										},
+										{
+											"key": "filter",
+											"value": "(response_status_code eq 404)"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "200 responses for Helloworld API proxy",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?select=sum(message_count)&timeRange=7/03/2022%2000:00~7/14/2022%2000:00&timeUnit=day&filter=(response_status_code eq 200 and apiproxy in 'hello-world')",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"apiproxy"
+									],
+									"query": [
+										{
+											"key": "select",
+											"value": "sum(message_count)"
+										},
+										{
+											"key": "timeRange",
+											"value": "7/03/2022%2000:00~7/14/2022%2000:00",
+											"description": "Time is UTC. Take AEST and take away 10 hours (or 11 in daylight savings)"
+										},
+										{
+											"key": "timeUnit",
+											"value": "day"
+										},
+										{
+											"key": "filter",
+											"value": "(response_status_code eq 200 and apiproxy in 'hello-world')"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Avg Total Response Time by API Proxy",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/apiproxy?select=avg(total_response_time)&timeRange=7/3/2022%2000:00~7/5/2022%2023:59&timeUnit=hour",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"apiproxy"
+									],
+									"query": [
+										{
+											"key": "select",
+											"value": "avg(total_response_time)"
+										},
+										{
+											"key": "timeRange",
+											"value": "7/3/2022%2000:00~7/5/2022%2023:59"
+										},
+										{
+											"key": "timeUnit",
+											"value": "hour"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Total Traffic for Developers",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/developer_email?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/06/2019%2023:59",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"developer_email"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "(developer_email%20eq%20'david.freeman@aemo.com.au')",
+											"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific developer email\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+											"disabled": true
+										},
+										{
+											"key": "select",
+											"value": "sum(message_count)",
+											"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+										},
+										{
+											"key": "timeRange",
+											"value": "12/01/2019%2000:00~12/06/2019%2023:59",
+											"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+										}
+									]
+								},
+								"description": "Total traffic over a given period (across all API calls, including errors) for all API Products.\nUse the filter query param for refining search results to particular proxies, verbs or call types.\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+							},
+							"response": []
+						},
+						{
+							"name": "Total Traffic for Developer Apps",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/developer_app?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/03/2019%2023:59",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"developer_app"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "(developer_app%20eq%20'Victorian-Energy-Compare-App')",
+											"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific developer app name\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+											"disabled": true
+										},
+										{
+											"key": "select",
+											"value": "sum(message_count)",
+											"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+										},
+										{
+											"key": "timeRange",
+											"value": "12/01/2019%2000:00~12/03/2019%2023:59",
+											"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+										}
+									]
+								},
+								"description": "Average transactions per second (across all API calls, including errors) through the API in a given period of time.\nUse the analytics metrics API to gather detailed metrics on the Consumption Data Product (AEMO Electricity Meter Reading Data API).\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+							},
+							"response": []
+						},
+						{
+							"name": "200 response - total message count in environment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats?select=sum(message_count)&timeRange=7/03/2022%2000:00~7/14/2022%2000:00&timeUnit=day&filter=(response_status_code eq 200)",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats"
+									],
+									"query": [
+										{
+											"key": "select",
+											"value": "sum(message_count)"
+										},
+										{
+											"key": "timeRange",
+											"value": "7/03/2022%2000:00~7/14/2022%2000:00",
+											"description": "Time is UTC. Take AEST and take away 10 hours (or 11 in daylight savings)"
+										},
+										{
+											"key": "timeUnit",
+											"value": "day"
+										},
+										{
+											"key": "filter",
+											"value": "(response_status_code eq 200)"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "StartFragment\n\nTime ranges are in UTC.\n\nTo convert AEST to UTC, take away 10 hours from AEST (or 11 in daylight savings)\n\nEndFragme"
+				},
+				{
+					"name": "API Proxies",
+					"item": [
+						{
+							"name": "Get Organizations API Proxy Deployments",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"deployments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List APIs in an Organization",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "API Proxy details",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "hello-world",
+											"description": "Provide an API Proxy name"
+										}
+									]
+								},
+								"description": "Gets an API proxy by name, including a list of existing revisions of the proxy."
+							},
+							"response": []
+						},
+						{
+							"name": "List deployments for an API proxy",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "hello-world",
+											"description": "API Proxy name"
+										},
+										{
+											"key": "revision",
+											"value": "22",
+											"description": "The revision to get"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get a deployment for an API proxy and actual state reported by runtime pods",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/apis/:api/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"apis",
+										":api",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "healthcheck-v1"
+										},
+										{
+											"key": "revision",
+											"value": "1"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Export an API Proxy",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/octet-stream"
+									},
+									{
+										"key": "Authorization",
+										"type": "text",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api/revisions/:revision?format=bundle",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api",
+										"revisions",
+										":revision"
+									],
+									"query": [
+										{
+											"key": "format",
+											"value": "bundle"
+										}
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "healthcheck-v1"
+										},
+										{
+											"key": "revision",
+											"value": "1"
+										}
+									]
+								},
+								"description": "Gets an API proxy by name, including a list of existing revisions of the proxy."
+							},
+							"response": []
+						},
+						{
+							"name": "Deploy API Proxy",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/apis/:api/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"apis",
+										":api",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "hello-world"
+										},
+										{
+											"key": "revision",
+											"value": "22",
+											"description": "Revision of the API Proxy to deploy. Must match an actual revision"
+										}
+									]
+								},
+								"description": "Deploy the API in the environment you want to with a revision number one higher than the already existing revisions.\n\nReference: [https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments.apis.revisions.deployments/deploy](https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments.apis.revisions.deployments/deploy)\n\n`curl -v -u username:password -X POST http://localhost:8080/v1/organizations/{{org}}/apis/{{API}}/revisions//deployments?action=deploy\\&env={{env}} -H \"Content-Type: application/octet-stream\"`"
+							},
+							"response": []
+						},
+						{
+							"name": "Undeploy API Proxy",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/apis/:api/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"apis",
+										":api",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "hello-world"
+										},
+										{
+											"key": "revision",
+											"value": "22",
+											"description": "Revision of the API Proxy to undeploy. Must match a deployed revision for that environment"
+										}
+									]
+								},
+								"description": "Undeploy revision before going ahead and removing any API's.\n\nReference: [https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments.apis.revisions.deployments/undeploy](https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.environments.apis.revisions.deployments/undeploy)\n\n`curl -v -u username:password http://localhost:8080/v1/organizations//apis//revisions//deployments?action=undeploy\\&env=\\&force=true -X POST`"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete API Proxy revision",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api/revisions/:revision",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api",
+										"revisions",
+										":revision"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "hello-world",
+											"description": "The name of the API who's revision you wish to delete"
+										},
+										{
+											"key": "revision",
+											"value": "19",
+											"description": "The revision number of the API you're after"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete an API",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": null,
+											"description": "Provide the API Proxy name"
+										}
+									]
+								},
+								"description": "  Make sure all revisions of an API are removed before going ahead and undeploying an API\n\n`curl -v -u username:password http://localhost:8080/v1/organizations/<orgname>/apis/<api you want to delete> -X DELETE`"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Bundle",
+					"item": [
+						{
+							"name": "Import Bundle",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/octet-stream"
+									}
+								],
+								"body": {
+									"mode": "file",
+									"file": {
+										"src": ""
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis?action=import\\&name=_API_",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis"
+									],
+									"query": [
+										{
+											"key": "action",
+											"value": "import\\"
+										},
+										{
+											"key": "name",
+											"value": "_API_"
+										}
+									]
+								},
+								"description": "  Import a bundle. Replace {{API}} with the api the bundle is being imported into and upload the <bundle name>.zip file below.\n    \n    If you wish to verify syntax as part of the upload. Add \\&validate=true after {{API}}\n\n`curl -v -u username:password -X POST http://localhost:8080/v1/organizations/<orgname>/apis?action=import\\&name={{API}} -H \"Content-Type: application/octet-stream\" -T <bundle name>.zip`\n\n\n"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Cache",
+					"item": [
+						{
+							"name": "List caches",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/caches",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"caches"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Data Collectors",
+					"item": [
+						{
+							"name": "List Data Collectors",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/datacollectors",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"datacollectors"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Data Collector",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"dc_data_collector_buy\",\r\n  \"description\": \"Data collector for apigeex-sonrai org. Collects buy flag for billing\",\r\n  \"type\": \"STRING\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/datacollectors?dataCollectorId=dc_data_collector_buy",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"datacollectors"
+									],
+									"query": [
+										{
+											"key": "dataCollectorId",
+											"value": "dc_data_collector_buy"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Data Collector Details",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/datacollectors/:dataCollector",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"datacollectors",
+										":dataCollector"
+									],
+									"variable": [
+										{
+											"key": "dataCollector",
+											"value": "dc_data_collector_rental",
+											"description": "string. Required. Name of the data collector in the following format: organizations/{org}/datacollectors/{dataCollectorId}."
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Data Collector",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/datacollectors/:dataCollector",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"datacollectors",
+										":dataCollector"
+									],
+									"variable": [
+										{
+											"key": "dataCollector",
+											"value": "dc_data_collector"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "Data Collectors are used for capturing metrics and analytics from using the DataCapture policy.\n\nYou must have a data collector created to use DataCapture policies.\n\nSee [https://cloud.google.com/apigee/docs/api-platform/reference/policies/data-capture-policy](https://cloud.google.com/apigee/docs/api-platform/reference/policies/data-capture-policy)\n\nAPI Reference:\nhttps://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.datacollectors"
+				},
+				{
+					"name": "Developers",
+					"item": [
+						{
+							"name": "Developer details",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json",
+										"description": "application/json or application/xml",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email"
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": "david.freeman@sonrai.com.au",
+											"description": "Provide the developer email address"
+										}
+									]
+								},
+								"description": "Returns the profile for a developer by email address or ID. All time values are UNIX time values. The profile includes the developer's email address, ID, name, and other information.\r\nNote the following:\r\nWith Apigee Edge for Public Cloud, the response includes only the first **100** apps.\r\nApigee recommends that you use the developer's email address when calling this API. Developer IDs are generated internally by Apigee and are not guaranteed to stay the same over time."
+							},
+							"response": []
+						},
+						{
+							"name": "Developer List",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Developers and details",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers?expand=true",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "true",
+											"description": "Optional. Set to true to list developers exanded with details."
+										},
+										{
+											"key": "count",
+											"value": "1",
+											"description": "Optional.\n\nNote: This parameter can be used with Apigee Edge for Public Cloude only.\n\nLimits the list to the number you specify. Use with the startKey parameter to provide more targeted filtering. The limit is 1000.",
+											"disabled": true
+										},
+										{
+											"key": "startKey",
+											"value": "",
+											"description": "Optional.\n\nNote: This parameter can be used with Apigee Edge for Public Cloud only.\n\nTo filter the keys that are returned, enter the email of a developer that the list will start with. For example, if the an unfiltered list returns:\n\nwestley@example.com\nfezzik@example.com\nbuttercup@example.com\n\nand your startKey is fezzik@example.com, the returned list will be\n\nfezzik@example.com\nbuttercup@example.com",
+											"disabled": true
+										}
+									]
+								},
+								"description": "Lists all developers and their details (e.g. their apps) in an organization by email address. This call does not list any company developers who are a part of the designated organization.\r\n\r\nWith Apigee Edge for Public Cloud:\r\nA maximum of **1000** developers are returned per API call.\r\nYou can paginate the list of companies returned using the startKey and count query parameters"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Total Traffic for Developers (email)",
+							"request": {
+								"auth": {
+									"type": "basic",
+									"basic": [
+										{
+											"key": "password",
+											"value": "{{password}}",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "{{username}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"type": "text",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/stats/developer_email?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/06/2019%2023:59",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"stats",
+										"developer_email"
+									],
+									"query": [
+										{
+											"key": "filter",
+											"value": "(developer_email%20eq%20'david.freeman@aemo.com.au')",
+											"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific developer email\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+											"disabled": true
+										},
+										{
+											"key": "select",
+											"value": "sum(message_count)",
+											"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+										},
+										{
+											"key": "timeRange",
+											"value": "12/01/2019%2000:00~12/06/2019%2023:59",
+											"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+										}
+									]
+								},
+								"description": "Total traffic over a given period (across all API calls, including errors) for all API Products.\nUse the filter query param for refining search results to particular proxies, verbs or call types.\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Developer",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": string,\n  \"firstName\": string,\n  \"lastName\": string,\n  \"userName\": string,\n  \"attributes\": [\n    {\n      object (Attribute)\n    }\n  ],\n  \"apps\": [\n    string\n  ],\n  \"companies\": [\n    string\n  ],\n  \"developerId\": string,\n  \"organizationName\": string,\n  \"status\": string,\n  \"createdAt\": string,\n  \"lastModifiedAt\": string,\n  \"accessType\": string,\n  \"appFamily\": string\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Developer App",
+					"item": [
+						{
+							"name": "Developer App Details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email/apps/:app",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email",
+										"apps",
+										":app"
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": null
+										},
+										{
+											"key": "app",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Developer App Keys",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Accept",
+										"value": "application/xml"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email/apps/:app/keys/{{key}}",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email",
+										"apps",
+										":app",
+										"keys",
+										"{{key}}"
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": null
+										},
+										{
+											"key": "app",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Developer App Keys",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"apiProducts\": array,\r\n  \"attributes\": [\r\n    {\r\n      object (Attribute)\r\n    }\r\n  ],\r\n  \"consumerKey\": string,\r\n  \"consumerSecret\": string,\r\n  \"expiresAt\": string,\r\n  \"issuedAt\": string,\r\n  \"scopes\": [\r\n    string\r\n  ],\r\n  \"status\": string,\r\n  \"expiresInSeconds\": string\r\n}"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email/apps/:app/keys",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email",
+										"apps",
+										":app",
+										"keys"
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": null
+										},
+										{
+											"key": "app",
+											"value": null
+										}
+									]
+								},
+								"description": "See [https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.developers.apps.keys/create](https://cloud.google.com/apigee/docs/reference/apis/apigee/rest/v1/organizations.developers.apps.keys/create)"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete app credentials",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Accept",
+										"value": "application/xml"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/developers/:developer_email/apps/:app/keys/{{key}}",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":developer_email",
+										"apps",
+										":app",
+										"keys",
+										"{{key}}"
+									],
+									"variable": [
+										{
+											"key": "developer_email",
+											"value": null
+										},
+										{
+											"key": "app",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Environments",
+					"item": [
+						{
+							"name": "Get Environments",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get an Environment",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Env Keystores",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keystores",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keystores"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Environment Groups",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/envgroups",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"envgroups"
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts"
+							},
+							"response": []
+						},
+						{
+							"name": "Get an Environment Group",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/envgroups/{{env}}",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"envgroups",
+										"{{env}}"
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts"
+							},
+							"response": []
+						},
+						{
+							"name": "Get an Environment Group Attachments",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/envgroups/{{env}}/attachments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"envgroups",
+										"{{env}}",
+										"attachments"
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts"
+							},
+							"response": []
+						},
+						{
+							"name": "Create New ENV in ORG",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": string,\r\n  \"description\": string,\r\n  \"createdAt\": string,\r\n  \"lastModifiedAt\": string,\r\n  \"properties\": {\r\n    object (Properties)\r\n  },\r\n  \"displayName\": string,\r\n  \"state\": enum (State),\r\n  \"deploymentType\": enum (DeploymentType),\r\n  \"apiProxyType\": enum (ApiProxyType),\r\n  \"forwardProxyUri\": string\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments"
+									],
+									"query": [
+										{
+											"key": "environmentId",
+											"value": "dev",
+											"disabled": true
+										}
+									]
+								},
+								"description": "This activitiy is reserved for Google when using Apigee SaaS\r\n  Update {{org}} and {{env}} variables as necessary to create a new environment"
+							},
+							"response": []
+						},
+						{
+							"name": "Update Environments",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": string,\r\n  \"description\": string,\r\n  \"createdAt\": string,\r\n  \"lastModifiedAt\": string,\r\n  \"properties\": {\r\n    object (Properties)\r\n  },\r\n  \"displayName\": string,\r\n  \"state\": enum (State),\r\n  \"deploymentType\": enum (DeploymentType),\r\n  \"apiProxyType\": enum (ApiProxyType),\r\n  \"forwardProxyUri\": string\r\n}"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}"
+									]
+								},
+								"description": "  Updates a specific environment in an organization.Descriptionn could be updated using the same.\n\n`curl -u user:passwd \"http://localhost:8080/v1/organizations/{{org}}/environments/{{env}}\" `"
+							},
+							"response": []
+						},
+						{
+							"name": "Attach an environment to an instance",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"environment\": \"[ENVIRONMENT NAME]\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/instances/:instance/attachments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"instances",
+										":instance",
+										"attachments"
+									],
+									"variable": [
+										{
+											"key": "instance",
+											"value": "",
+											"description": "Instance name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Detatch an environment to an instance",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/instances/:instance/attachments/:attachment_guid",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"instances",
+										":instance",
+										"attachments",
+										":attachment_guid"
+									],
+									"variable": [
+										{
+											"key": "instance",
+											"value": ""
+										},
+										{
+											"key": "attachment_guid",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete an environment",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/:environment",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										":environment"
+									],
+									"variable": [
+										{
+											"key": "environment",
+											"value": null,
+											"description": "The environment name you want to delete"
+										}
+									]
+								},
+								"description": "Environment must have no deployed APIs or Shared Flows to it.<br><br>\nEnvironment must not be attached to an instances."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Keystores and Truststores",
+					"item": [
+						{
+							"name": "List Keystores",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keystores",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keystores"
+									]
+								},
+								"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores"
+							},
+							"response": []
+						},
+						{
+							"name": "Keystore or Truststore Details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keystores/:keystore_name",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keystores",
+										":keystore_name"
+									],
+									"variable": [
+										{
+											"key": "keystore_name",
+											"value": null
+										}
+									]
+								},
+								"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores/%7Bkeystore_name%7D"
+							},
+							"response": []
+						},
+						{
+							"name": "Test a Keystore or Truststore",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"host\": \"{hostName}\",\r\n    \"port\": \"{tlsPortNumber}\",\r\n    \"connectionTimeout\": \"3000\",\r\n    \"targetEndpointConfiguration\": {\r\n      \"clientAuthEnabled\": \"{true | false}\",\r\n      \"keyStore\": \"{keystoreName}\",\r\n      \"keyAlias\": \"{keyStoreAlias}\",\r\n      \"trustStore\": \"{tuststoreName}\",\r\n      \"ciphers\": [ \"{cipher1}\",\"{cipher2}\", ...],\r\n      \"protocols\": [\"{protocol1}\",\"{protocol2}\", ... ]\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/testssl",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"testssl"
+									]
+								},
+								"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores/%7Bkeystore_name%7D"
+							},
+							"response": []
+						},
+						{
+							"name": "Export a certificate from a Keystore",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keystores/:keystore_name/cert/:cert_name/export",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keystores",
+										":keystore_name",
+										"cert",
+										":cert_name",
+										"export"
+									],
+									"variable": [
+										{
+											"key": "keystore_name",
+											"value": null,
+											"description": "Provide the keystore name"
+										},
+										{
+											"key": "cert_name",
+											"value": null,
+											"description": "Provide the certificate name"
+										}
+									]
+								},
+								"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores/%7Bkeystore_name%7D/certs/%7Bcert_name%7D/export"
+							},
+							"response": []
+						}
+					],
+					"description": "https://apidocs.apigee.com/api-reference/content/keystores-and-truststores",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "KVM",
+					"item": [
+						{
+							"name": "List KVMs in an environment",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keyvaluemaps"
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keyvaluemaps"
+							},
+							"response": []
+						},
+						{
+							"name": "List KVMs for an API proxy",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api/keyvaluemaps",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api",
+										"keyvaluemaps"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": "healthcheck-v1"
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apis/%7Bapi_name%7D/keyvaluemaps"
+							},
+							"response": []
+						},
+						{
+							"name": "KVM details in an API proxy",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apis/:api/keyvaluemaps/:kvm",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apis",
+										":api",
+										"keyvaluemaps",
+										":kvm"
+									],
+									"variable": [
+										{
+											"key": "api",
+											"value": ""
+										},
+										{
+											"key": "kvm",
+											"value": null
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apis/%7Bapi_name%7D/keyvaluemaps/%7Bmap_name%7D"
+							},
+							"response": []
+						},
+						{
+							"name": "KVM details in an environment",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/:kvm",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keyvaluemaps",
+										":kvm"
+									],
+									"variable": [
+										{
+											"key": "kvm",
+											"value": null
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keyvaluemaps/%7Bmap_name%7D"
+							},
+							"response": []
+						},
+						{
+							"name": "KVM Delete (Entire KVM)",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/keyvaluemaps/:kvm",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"keyvaluemaps",
+										":kvm"
+									],
+									"variable": [
+										{
+											"key": "kvm",
+											"value": null
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "https://apidocs.apigee.com/api-reference/content/keyvalue-maps-management-api",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Shared Flows",
+					"item": [
+						{
+							"name": "Organizations Shared Flows",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/sharedflows",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"sharedflows"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Shared Flow details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/sharedflows/:shared_flow",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"sharedflows",
+										":shared_flow"
+									],
+									"variable": [
+										{
+											"key": "shared_flow",
+											"value": "security-v1",
+											"description": "Shared flow name"
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/shared-flow-api/apis/get/organizations/%7Borg_name%7D/sharedflows/%7Bshared_flow_name%7D"
+							},
+							"response": []
+						},
+						{
+							"name": "Shared Flow deployments",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/sharedflows/:shared_flow/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"sharedflows",
+										":shared_flow",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "shared_flow",
+											"value": "security-v1",
+											"description": "Shared flow name"
+										},
+										{
+											"key": "revision",
+											"value": "1"
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/shared-flow-api/apis/get/organizations/%7Borg_name%7D/sharedflows/%7Bshared_flow_name%7D/revisions/%7Brevision_number%7D/deployments"
+							},
+							"response": []
+						},
+						{
+							"name": "Organizations Shared Flow Deployments",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/sharedflows/:shared_flow/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"sharedflows",
+										":shared_flow",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "shared_flow",
+											"value": "security-v1",
+											"description": "Shared flow name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Undeploy a Shared Flow",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/sharedflows/:shared_flow/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"sharedflows",
+										":shared_flow",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "shared_flow",
+											"value": null,
+											"description": "Shared flow name"
+										},
+										{
+											"key": "revision",
+											"value": null
+										}
+									]
+								},
+								"description": "  List the keystores in the environment"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Shared Flow",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/sharedflows/:shared_flow",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"sharedflows",
+										":shared_flow"
+									],
+									"variable": [
+										{
+											"key": "shared_flow",
+											"value": null,
+											"description": "Shared flow name"
+										}
+									]
+								},
+								"description": "  List the keystores in the environment"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Organization",
+					"item": [
+						{
+							"name": "Get Organizations",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{gcp_oauth_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Organisation details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List instances and their status",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/instances",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"instances"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get attachments for an instance",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/instances/:instance/attachments",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"instances",
+										":instance",
+										"attachments"
+									],
+									"variable": [
+										{
+											"key": "instance",
+											"value": "",
+											"description": "Instance name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Adjust node minimum",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"{{instance}}\",\r\n    \"node_config\": {\r\n      \"min_node_count\": 1\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/instances/:instance?update_mask=node_config.min_node_count",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"instances",
+										":instance"
+									],
+									"query": [
+										{
+											"key": "update_mask",
+											"value": "node_config.min_node_count"
+										}
+									],
+									"variable": [
+										{
+											"key": "instance",
+											"value": "",
+											"description": "Instance name"
+										}
+									]
+								},
+								"description": "Adjust the number of nodes in your instance. Generally there is one instance per Organization (or you can think of it as one instance per GCP project).<br>\n<br>\nKeep in mind each node costs $2.05/hour, and the minimum number of nodes will be deployed as always-on.\n\nFor further details see here;\nhttps://cloud.google.com/apigee/docs/api-platform/reference/pay-as-you-go"
+							},
+							"response": []
+						},
+						{
+							"name": "Get operation status",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/operations/:operation_id",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"operations",
+										":operation_id"
+									],
+									"variable": [
+										{
+											"key": "operation_id",
+											"value": null,
+											"description": "The operation id, e.g. cdde2901-44b4-4d67-ace4-26a46d99439c"
+										}
+									]
+								},
+								"description": "Get the status of an operation to see it's status. <br>\n(ID example; `432ab383-be1c-4a46-b542-1d3181d11744`)"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Products",
+					"item": [
+						{
+							"name": "List API Products",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apiproducts?expand=true",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apiproducts"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "true",
+											"description": "Use this parameter to get the details on all API Products"
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apiproducts-0"
+							},
+							"response": []
+						},
+						{
+							"name": "API Product Details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apiproducts/:product",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apiproducts",
+										":product"
+									],
+									"variable": [
+										{
+											"key": "product",
+											"value": null,
+											"description": "Name of API Product"
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apiproducts/%7Bapiproduct_name%7D-0"
+							},
+							"response": []
+						},
+						{
+							"name": "API Product Creation",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\" : \"helloworld-beta\",\r\n  \"displayName\": \"helloworld beta\",\r\n  \"approvalType\": \"auto\",\r\n  \"attributes\": [\r\n    {\r\n      \"name\": \"access\",\r\n      \"value\": \"private\"\r\n    }\r\n  ],\r\n  \"environments\": [\"eval\"],\r\n  \"proxies\": [\"hello-world\"]\r\n}"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/apiproducts",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"apiproducts"
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/apiproducts"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "TargetServers",
+					"item": [
+						{
+							"name": "List Target Servers",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/targetservers",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"targetservers"
+									]
+								},
+								"description": "List all the target servers for the org and env\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/targetservers"
+							},
+							"response": []
+						},
+						{
+							"name": "Target Servers Details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/targetservers/:target_server_id",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"targetservers",
+										":target_server_id"
+									],
+									"variable": [
+										{
+											"key": "target_server_id",
+											"value": ""
+										}
+									]
+								},
+								"description": "List all the target servers for the org and env\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/targetservers"
+							},
+							"response": []
+						},
+						{
+							"name": "Add Target",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "content-type",
+										"value": "application/json"
+									},
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"host\": \"10.1.124.41\",\n    \"isEnabled\": true,\n    \"name\": \"SpeechTest\",\n    \"port\": 18080\n}"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/targetservers",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"targetservers"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"description": "https://apidocs.apigee.com/api/api_resources/51-targetservers",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "VirtualHosts",
+					"item": [
+						{
+							"name": "List Virtual Hosts",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/virtualhosts",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"virtualhosts"
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts"
+							},
+							"response": []
+						},
+						{
+							"name": "Virtual Host Details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									}
+								],
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/virtualhosts/:virtual_host",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"virtualhosts",
+										":virtual_host"
+									],
+									"variable": [
+										{
+											"key": "virtual_host",
+											"value": ""
+										}
+									]
+								},
+								"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts/%7Bvirtualhost_name%7D"
+							},
+							"response": []
+						},
+						{
+							"name": "Add Virtual Host",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{gcp_oauth_token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/xml"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "<VirtualHost name=\"default\">\n  <HostAliases>\n    <HostAlias>myorg- test.apigee.net</HostAlias>\n  </HostAliases>\n  <Interfaces/> \n  <Port>443</Port>\n</VirtualHost>"
+								},
+								"url": {
+									"raw": "https://apigee.googleapis.com/v1/organizations/{{org}}/environments/{{env}}/virtualhosts",
+									"protocol": "https",
+									"host": [
+										"apigee",
+										"googleapis",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"virtualhosts"
+									]
+								},
+								"description": "  Update {{org}} and {{env}} variables as necessary to create a new environment\n    \n  Update HostAlias\n   \n"
+							},
+							"response": []
+						}
+					]
+				}
+			],
+			"description": "To get started and make calls to the Apigee X API:\n\n1. Get a token:\n    1. From GCP Console:\n        1. Login to the GCP Console\n        2. Start a CLI session and switch to the Google cloud project you're running Apigee X from (`set project {project-id}`).\n        3. Run this command and save the GCP token:  \n            `gcloud auth application-default print-access-token`\n    2. From Collection: TBC\n2. Paste the token into an Environment variable called _gcp_oauth_token_\n3. Subsequent calls will use this variable in an Auth Bearer header.\n    \n\nNOTE: There are other variables throughout the collection, where it is expected you have Environment variables set for these."
+		}
+	]
+}
