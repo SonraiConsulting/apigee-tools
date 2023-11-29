@@ -27,3 +27,7 @@ This script will:
 - extract Company records from the Edge ORG and store them in a local file called companies.json, local to where the script is run.
 - transform  the Company records into a valid Apigee X AppGroup format, exports output to file, appGroups.json, local to where the script is run.
 - loads the appGroups.json file into Apigee X as appGroups.
+#### Current Limitations:
+- Company members and their roles are not yet included.
+- Company Apps to AppGroup-related Apps are not yet included.
+- Assumes MINT_BILLING_TYPE is second custom attribute. (and is deleted).
