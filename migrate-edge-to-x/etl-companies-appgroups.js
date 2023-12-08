@@ -1,9 +1,12 @@
-//Extract, transform and load Company records from Apigee Edge to an Apigee X Project as AppGroups.
-//Read in the results from Apigee Edge Company details list, and convert to AppGroup format, and write to Apigee X project
+// Extract, transform and load Company records from Apigee Edge to an Apigee X Project as AppGroups.
+// Read in the results from Apigee Edge Company details list, including related developers, and convert to AppGroup format including developer members, and write to Apigee X project
+// © 2023, Sonrai Consulting Pty Ltd, info@sonrai.com.au
 
 const fs = require('fs');
+const axiosRequest = require('axios');
 const prompt = require('prompt-sync')();
 
+//Prompt for user input to access Apigee Edge Org and Apigee X project.
 const org = prompt('Enter the Apigee Edge Organization name to get the Company records from:')
 const token = prompt('Enter your Apigee Edge OAuth2 token:');
 const apigee_x_project = prompt('Enter the Apigee X Project to load the transformed AppGroups into:')
@@ -43,44 +46,72 @@ function extract(org, token, callback){
 }
 
 //Transform - using companies.json file, transform dataset into AppGroup format. This function is a callback from the extract function.
-function transform(){
-  //Use the data in the JSON file previously written by the extrct function.
+//Process the AppGroups and add members to the AppGroup as "member" and "app_developers"
+async function transform(){
+  //Use the data in the JSON file previously written by the extract function.
   try {
-  var dataSet = fs.readFileSync('./companies.json', 'utf8')
-  } catch (err) {
-  console.error(err)
-  }
-
-  //convert dataSet to JSON
+    var dataSet = fs.readFileSync('./companies.json', 'utf8')
+    } catch (err) {
+    console.error(err)
+    }
+    
+  //convert dataSet to JSON and place just the company records into a variable
   const company_data = JSON.parse(dataSet);
-  //Number of companies in the data set
-  var numCompanies = company_data.company.length
+  const companyRecords = company_data.company
+
   //Create appGroup array shell
-  var appGroup_array = {"appGroups":[]};
+  var appGroupArray = {"appGroups":[]};
 
-  for (var i = 0; i < numCompanies; i++) {
-      //Get all the records from each of company record in the company_data.company and store in the companyRecord array
-      var companyRecord = company_data.company[i];
-      //Remove objects that are not required by the AppGroup format.
-      delete companyRecord['organization'];
-      delete companyRecord['createdAt'];
-      delete companyRecord['createdBy'];
-      delete companyRecord['lastModifiedAt'];
-      delete companyRecord['lastModifiedBy'];
-      //Remove the MINT_BILLING_TYPE element. This may need to be adjusted using an if statement, as this blindly removes the second object in the custom attribute array.
-      companyRecord.attributes.splice(1,1)
+  for(const [i, company] of companyRecords.entries()) {
+    //Remove the unneeded values from the company record (not needed when writing the AppGroup)
+    delete company['organization'];
+    delete company['createdAt'];
+    delete company['createdBy'];
+    delete company['lastModifiedAt'];
+    delete company['lastModifiedBy'];
+    var adminEmail = company.attributes[0].value;
+    //Set the admin of the AppGroup. This value will be used if there's no other members.
+    company.attributes[0] = {"name" : "__apigee_reserved__developer_details", "value" : "[{\"developer" + "\":" + "\"" + adminEmail + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}]"}
+    adminEntry = "{\"developer" + "\":" + "\"" + adminEmail + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}";
 
-
-      //Recreate the array based on the AppGroup format.
-      appGroup_array.appGroups.push(companyRecord);
-      var email = companyRecord.attributes[0].value;
-      companyRecord.attributes[0] = {"name" : "__apigee_reserved__developer_details", "value" : "[{\"developer" + "\":" + "\"" + email + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}]"}
+    // Get developer members for the company
+    memberRecords = await getDevelopers(token, org, company.name)
+    var membersValue = "";
+    for(const [i, member] of memberRecords.developer.entries()) {
+      memberEmail = member.email;
+      //If the memberEmail is not the adminEmail add the developer member to the membersValue as a member and app_developer
+      if (memberEmail != adminEmail) {
+        memberEntry = "{\"developer" + "\":" + "\"" + memberEmail + "\"" + ",\"" + "roles\"" + ":[\"member" + "\"" + ",\"" + "app_developer" + "\"]},";
+        membersValue = memberEntry.concat(membersValue);
       }
-  console.log(appGroup_array);
-  //Convert array to a JSON string and prettify with tabs
-  const appGroups = JSON.stringify(appGroup_array, null, "\t");
+    }
+    //Set the members of the AppGroup
+    company.attributes[0] = {"name" : "__apigee_reserved__developer_details", "value" : "[" + membersValue + adminEntry + "]"}
+    appGroupArray.appGroups.push(company);
+  }
+  const appGroups = JSON.stringify(appGroupArray, null, "\t");
   fs.writeFileSync('./appGroups.json', appGroups)
   console.log(appGroups);
+}
+
+//Get the developer members on the company record
+async function getDevelopers(token, org, company) {
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: 'https://api.enterprise.apigee.com/v1/o/' + org + '/companies/' + company + '/developers',
+    headers: { 
+      'Authorization': 'Bearer ' + token
+    }
+  };
+
+  try {
+    //Wait for the response before returning the developers
+    let response = await axiosRequest.request(config)
+    return response.data;
+  } catch (error) {
+    console.error(`ERROR: ${error}`)
+  }
 }
 
 //Load - using appsGroups.json file, load dataset into Apigee X project
@@ -93,7 +124,7 @@ function load(apigee_x_project, gcp_token){
 
   //convert dataSet to JSON
   const appGroup_data = JSON.parse(dataSet);
-  console.log(appGroup_data.appGroups)
+  console.log(appGroup_data.appGroups[1])
 
   //Create appGroups iteratively
   var numAppGroups = appGroup_data.appGroups.length
