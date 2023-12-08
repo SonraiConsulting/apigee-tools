@@ -107,37 +107,44 @@ async function getDevelopers(token, org, company) {
 }
 
 //Load - using appsGroups.json file, load dataset into Apigee X project
-function load(apigee_x_project, gcp_token){
+function load(apigee_x_project, gcp_token) {
+  //Read appsGroups.json file into variable dataSet
   try {
   var dataSet = fs.readFileSync('./appGroups.json', 'utf8')
+  //console.log(dataSet)
   } catch (err) {
   console.error(err)
   }
 
   //convert dataSet to JSON
   const appGroup_data = JSON.parse(dataSet);
-  console.log(appGroup_data.appGroups[1])
+  console.log(appGroup_data.appGroups)
 
   //Create appGroups iteratively
   var numAppGroups = appGroup_data.appGroups.length
   console.log(numAppGroups)
-  var request = require('request');
-  for (var i = 0; i < numAppGroups; i++) {
-      var options = {
-          'method': 'POST',
-          'url': 'https://apigee.googleapis.com/v1/organizations/' + apigee_x_project + '/appgroups',
-          'headers': {
-              'Authorization': 'Bearer ' + gcp_token,
-              'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(appGroup_data.appGroups[i])
-          
-          };
-          request(options, function (error, response) {
-          if (error) throw new Error(error);
-          console.log(response.body);
-          });
 
+  for (var i = 0; i < numAppGroups; i++) {
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://apigee.googleapis.com/v1/organizations/' + apigee_x_project + '/appgroups',
+        headers: { 
+          'Authorization': 'Bearer ' + gcp_token,
+          'Content-Type': 'application/json'
+        },
+        data: JSON.stringify(appGroup_data.appGroups[i])
+      };
+    
+      try {
+        axiosRequest.request(config)
+          .then(response => {
+            console.log(response.data);
+          })
+      }
+      catch (error) {
+        console.error(`ERROR: ${error}`)
+      }
   }
 }
 
