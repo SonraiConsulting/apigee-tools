@@ -10,7 +10,6 @@ To use this Javascript tool you will need the following:
 - Node modules:
     - node-fetch
     - prompt-sync
-    - request
     - axios
 
 ### Apigee prerequisites
@@ -31,4 +30,3 @@ This script will:
 #### Current Limitations:
 - Company member roles are generally not set in Apigee Edge (ie. if using a Drupal portal to set developers against a company through invitations, Drupal does not set the role in Apigee Edge), therefore the developers added to the AppGroup are given both "member" and "app_developer" roles. Adjust the memberEntry value to suit which roles should be applicable.
 - Company Apps to AppGroup-related Apps are not yet included.
-- Uses request module for most API calls, next version will transform all calls to axios module.
