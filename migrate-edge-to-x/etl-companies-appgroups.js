@@ -14,35 +14,27 @@ const gcp_token = prompt('Enter the GCP OAuth2 token:')
 
 //Extract - get Company records and save them to a local file.
 //Set variables for the API call from user input to get Company records from Apigee Edge.
-function extract(org, token, callback){
-  var request = require('request');
-  var options = {
-    'method': 'GET',
-    'url': 'https://api.enterprise.apigee.com/v1/o/' + org + '/companies?expand=true',
-    'headers': {
-      'Authorization': 'Bearer ' + token
+function extract(org, token, callback) {
+  let config = {
+    method: 'get',
+    maxBodyLength: Infinity,
+    url: 'https://api.enterprise.apigee.com/v1/o/' + org + '/companies?expand=true',
+    headers: { 
+      'Authorization': 'Bearer ' +token
     }
   };
-  //Export Apigee Edge Comapny response to a file (for record keeping)
-  request(options, function (error, response) {
-      if (error) throw new Error(error);
-      fs.writeFileSync('./companies.json', response.body)
-      console.log(response.body);
-
-      //Read the file into variable dataSet (not used, but script can be edited to use this for validation if needed)
-      try {
-          var dataSet = fs.readFileSync('./companies.json', 'utf8')
-          console.log(dataSet)
-      } catch (err) {
-          console.error(err)
-      }
-      //convert dataSet to JSON
-      const company_data = JSON.parse(dataSet);
-      console.log(company_data);
-      //callback transform function
-      callback();
-
-    });
+  //Make request to Apigee Edge for all company data and save into local companies.json file
+  try {
+    axiosRequest.request(config)
+      .then(response => {
+        console.log(response.data);
+        fs.writeFileSync('companies.json', JSON.stringify(response.data, null, "\t"))
+        callback();
+      })
+  }
+  catch (error) {
+    console.log(error);
+  }
 }
 
 //Transform - using companies.json file, transform dataset into AppGroup format. This function is a callback from the extract function.
@@ -89,9 +81,9 @@ async function transform(){
     company.attributes[0] = {"name" : "__apigee_reserved__developer_details", "value" : "[" + membersValue + adminEntry + "]"}
     appGroupArray.appGroups.push(company);
   }
-  const appGroups = JSON.stringify(appGroupArray, null, "\t");
-  fs.writeFileSync('./appGroups.json', appGroups)
-  console.log(appGroups);
+  fs.writeFileSync('./appGroups.json', JSON.stringify(appGroupArray, null, "\t"))
+  console.log(appGroupArray);
+  load(apigee_x_project,gcp_token)
 }
 
 //Get the developer members on the company record
@@ -150,4 +142,3 @@ function load(apigee_x_project, gcp_token){
 }
 
 extract(org,token,transform)
-load(apigee_x_project,gcp_token)
