@@ -65,10 +65,13 @@ async function transform(){
     delete company['createdBy'];
     delete company['lastModifiedAt'];
     delete company['lastModifiedBy'];
-    var adminEmail = company.attributes[0].value;
-    //Set the admin of the AppGroup. This value will be used if there's no other members.
-    company.attributes[0] = {"name" : "__apigee_reserved__developer_details", "value" : "[{\"developer" + "\":" + "\"" + adminEmail + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}]"}
-    adminEntry = "{\"developer" + "\":" + "\"" + adminEmail + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}";
+    var adminEmail = "";
+    //If the company has an admin attribute, set the admin of the AppGroup. This value will be used if there's no other members.
+    if (company.attributes.length > 0 && company.attributes[0].name == "ADMIN_EMAIL") {
+      adminEmail = company.attributes[0].value;
+      company.attributes[0] = {"name" : "__apigee_reserved__developer_details", "value" : "[{\"developer" + "\":" + "\"" + adminEmail + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}]"}
+      adminEntry = "{\"developer" + "\":" + "\"" + adminEmail + "\"" + ",\"" + "roles\"" + ":[\"admin" + "\"]}";
+    }
 
     // Get developer members for the company
     memberRecords = await getDevelopers(token, org, company.name)
