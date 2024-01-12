@@ -40,3 +40,6 @@ This script will:
 - Add API Products and the correct status as per the Company App.
 #### Current Limitations:
 - Once an AppGroup App is added the script will not update existing AppGroup Apps with credential, custom-attribute, scope or API Product changes.
+
+## Further Information
+For further information, or if you're looking for Apigee expertise, please reach out to us at mailto:info@sonrai.com.au
