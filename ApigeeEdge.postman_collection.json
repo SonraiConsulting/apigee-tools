@@ -1,0 +1,4573 @@
+{
+	"info": {
+		"_postman_id": "3a771b1e-ee76-4679-81f2-fb1fd231d9d1",
+		"name": "ApigeeEdge",
+		"description": "We have developed this Apigee Edge API collection for use against Apigee Edge Orgs.\n\n## Getting Started\n\nHere's how to get started.\n\n1. Set your environment variables for `org` and `env` (or use the collection variables).\n2. In the Getting Started folder, _**Get mgmt API token**_ by entering in your credentials (best saved against the Environment Variables) and you may need your Google Authenticator token. The response access token will be saved against the `token` variable.\n    \n3. Start using the requests in the collection.\n    \n\nWe hope you enjoy the collection, and please send us any feedback or if you'd like further details on the services we offer.\n\n### Contact us at: [info@sonrai.com.au](https://desktop.postman.com/?desktopVersion=9.22.2&userId=8084908&teamId=430530)\n\n### [Sonrai Consulting Pty Ltd](https://sonrai.com.au)\n\n## Further detail\n\nSee API documentation for more details and for API calls missing from this collection:\n\n[https://apidocs.apigee.com/apis](https://apidocs.apigee.com/apis)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "8084908",
+		"_collection_link": "https://sonrai.postman.co/workspace/Sonrai-Consulting-Workspace~a7035900-1130-424f-8466-84c5fbf655c9/collection/8084908-3a771b1e-ee76-4679-81f2-fb1fd231d9d1?action=share&source=collection_link&creator=8084908"
+	},
+	"item": [
+		{
+			"name": "Getting Started",
+			"item": [
+				{
+					"name": "Get mgmt API token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"description": "Use this exact token.\nCheck documentation to ensure token is current https://docs.apigee.com/api-platform/system-administration/management-api-tokens",
+								"key": "Authorization",
+								"type": "text",
+								"value": "Basic ZWRnZWNsaTplZGdlY2xpc2VjcmV0"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"description": "Update environment variables with your username",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"description": "Update environment variable with your password",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "mfa_token",
+									"value": "123456",
+									"description": "(optional) If you use Google Authenticator, enter the code for your Apigee account here",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{saml_prefix}}login.apigee.com/oauth/token",
+							"protocol": "https",
+							"host": [
+								"{{saml_prefix}}login",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						},
+						"description": "You'll need to get an Oauth token using your Apigee Edge credentials, and possibly your 2FA code (see `mfa_token` Key/Value in body) from your Google Authenticator app.\n\nThe `saml_prefix` variable should either be blank (if the enterprise does not have SAML enabled on their Apigee Edge Org) or prefixed with the enterprise's prefix for the SAML login.  \nFor example:  \nORG without SAML-enablement:\n\n```\nPOST https://login.apigee.com/oauth/token\n\n ```\n\nORG that is SAML-enabled\n\n```\nPOST https://myorg-saml.login.apigee.com/oauth/token\n\n ```\n\nSee: [https://docs.apigee.com/api-platform/system-administration/management-api-tokens](https://docs.apigee.com/api-platform/system-administration/management-api-tokens)\n\nThe token will last for 12 hours (43199 seconds).\n\nA _**test**_ will be run after the call to set the \"token\" environment variable with the token returned in the JSON response."
+					},
+					"response": []
+				},
+				{
+					"name": "Get SAML-based mgmt API token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded",
+								"disabled": true
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"description": "Use this exact token.\nCheck documentation to ensure token is current https://docs.apigee.com/api-platform/system-administration/management-api-tokens",
+								"key": "Authorization",
+								"type": "text",
+								"value": "Basic ZWRnZWNsaTplZGdlY2xpc2VjcmV0"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "grant_type=password&response_type=token%26passcode={{saml_passcode}}"
+						},
+						"url": {
+							"raw": "https://{{saml_prefix}}login.apigee.com/oauth/token",
+							"protocol": "https",
+							"host": [
+								"{{saml_prefix}}login",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						},
+						"description": "This request can be used to get an OAuth2 token for SAML-authenticated accounts, where a Passcode is required (normal user accounts that are SAML-authenticated). Some machine accounts may not require the SAML passcode, and in that case the usual Get mgmt API toekn request can be used.\n\nReference: [https://docs.apigee.com/api-platform/system-administration/using-saml](https://docs.apigee.com/api-platform/system-administration/using-saml)\n\n## Alternative:\n\nIf you have Linux (or WSL on your Windows laptop) you can use the get_token CLI\n\n1. Download and install acurl and get_token onto your Linux: [https://docs.apigee.com/api-platform/system-administration/auth-tools#install](https://docs.apigee.com/api-platform/system-administration/auth-tools#install)\n2. Use the tool to get a token: [https://docs.apigee.com/api-platform/system-administration/using-saml#get_token](https://docs.apigee.com/api-platform/system-administration/using-saml#get_token)\n3. Put the token into the `{{token}}` variable\n    \n\nThe token will last for 12 hours (43199 seconds).\n\n  \nA _**test**_ will be run after the call to set the \"token\" environment variable with the token returned in the JSON response."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh mgmt API token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);",
+									"postman.setEnvironmentVariable(\"token\", jsonData.access_token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"description": "Use this exact token.\nCheck documentation to ensure token is current https://docs.apigee.com/api-platform/system-administration/management-api-tokens",
+								"key": "Authorization",
+								"type": "text",
+								"value": "Basic ZWRnZWNsaTplZGdlY2xpc2VjcmV0"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"description": "Update environment variables with your username",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"description": "Update environment variable with your password",
+									"type": "text"
+								},
+								{
+									"key": "grant_type",
+									"value": "refresh_token",
+									"type": "text"
+								},
+								{
+									"key": "mfa_token",
+									"value": "248173",
+									"description": "Use Google Authenticator code for your Apigee account",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "refresh_token",
+									"value": "{{token}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://login.apigee.com/oauth/token",
+							"protocol": "https",
+							"host": [
+								"login",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"oauth",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "My user details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/developers/{{user}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"developers",
+								"{{user}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Use the Edge OAuth2 service to get tokens:\n\n[https://docs.apigee.com/api-platform/system-administration/management-api-tokens](https://docs.apigee.com/api-platform/system-administration/management-api-tokens)\n\nYou'll need to have your Edge user credentials saved in environment variables `username` and `password` (and if you use Google Authenticator for you 2FA you will need to enter that code into the header parameter as well).\n\nThen try the _**POST Get mgmt API token**_ request."
+		},
+		{
+			"name": "APIs",
+			"item": [
+				{
+					"name": "Deployments",
+					"item": [
+						{
+							"name": "Deployments",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis/:apiname/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"apis",
+										":apiname",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "apiname",
+											"value": "",
+											"description": "Enter name of API"
+										},
+										{
+											"key": "revision",
+											"value": "",
+											"description": "Enter the revision number"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deployments on Environment",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments/{{env}}/apis/:apiname/revisions/:revision/deployments",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"environments",
+										"{{env}}",
+										"apis",
+										":apiname",
+										"revisions",
+										":revision",
+										"deployments"
+									],
+									"variable": [
+										{
+											"key": "apiname",
+											"value": "",
+											"description": "Enter the API name"
+										},
+										{
+											"key": "revision",
+											"value": "",
+											"description": "Enter the revision number"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "List Deployments",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/deployments",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"deployments"
+									]
+								},
+								"description": "  Gets all the deployments of an organization"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "API list",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API Proxy details",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/apis/:apiname",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"apis",
+								":apiname"
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the unique API name here"
+								}
+							]
+						},
+						"description": "Gets an API proxy by name, including a list of existing revisions of the proxy."
+					},
+					"response": []
+				},
+				{
+					"name": "API Proxy endpoints",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/apis/:apiname/revisions/1",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"apis",
+								":apiname",
+								"revisions",
+								"1"
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the unique API name here"
+								}
+							]
+						},
+						"description": "Gets an API proxy by name, including a list of existing revisions of the proxy."
+					},
+					"response": []
+				},
+				{
+					"name": "Export an API Proxy",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/octet-stream"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/apis/:apiname/revisions/:revision?format=bundle",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"apis",
+								":apiname",
+								"revisions",
+								":revision"
+							],
+							"query": [
+								{
+									"key": "format",
+									"value": "bundle"
+								}
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the unique API Name here"
+								},
+								{
+									"key": "revision",
+									"value": "",
+									"description": "Enter the revision number for the API"
+								}
+							]
+						},
+						"description": "Gets an API proxy by name, including a list of existing revisions of the proxy."
+					},
+					"response": []
+				},
+				{
+					"name": "Undeploy Revisions",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/octet-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis/:apiname/revisions/:revision/deployments?action=undeploy&env={{env}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis",
+								":apiname",
+								"revisions",
+								":revision",
+								"deployments"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "undeploy"
+								},
+								{
+									"key": "env",
+									"value": "{{env}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the unique API Name here"
+								},
+								{
+									"key": "revision",
+									"value": "",
+									"description": "Enter the revision number for the API"
+								}
+							]
+						},
+						"description": "  Undeploy revision before going ahead and removing any API's.\n    \n`curl -v -u username:password http://localhost:8080/v1/organizations/<orgname>/apis/<api you want to delete>/revisions/<revisionnumber>/deployments?action=undeploy\\&env=<env where deployed>\\&force=true -X POST`"
+					},
+					"response": []
+				},
+				{
+					"name": "Import API Bundle",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "multipart/form-data"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "Use an API Proxy bundle ZIP file",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis?action=import",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "import",
+									"description": "Use \"import\" to import the API bundle. Use \"validate\" to only validate the API bundle and not import it."
+								},
+								{
+									"key": "name",
+									"value": "api_name",
+									"description": "Enter the API Name to import",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Import a bundle. Replace {{API}} with the api the bundle is being imported into and upload the .zip file below.\n\n```\nIf you wish to verify syntax as part of the upload. Add \\&validate=true after {{API}}\n\n ```\n\n`curl -v -u username:password -X POST http://localhost:8080/v1/organizations//apis?action=import\\&name={{API}} -H \"Content-Type: application/octet-stream\" -T .zip`"
+					},
+					"response": []
+				},
+				{
+					"name": "Deploy API",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/octet-stream"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis?action=import&name=API_NAME",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "import"
+								},
+								{
+									"key": "name",
+									"value": "API_NAME"
+								}
+							]
+						},
+						"description": "  Deploy the API in the environment you want to with a revision number one higher than the already existing revisions\n    \n`curl -v -u username:password -X POST http://localhost:8080/v1/organizations/{{org}}/apis/{{API}}/revisions/<revisionnumber>/deployments?action=deploy\\&env={{ENV}} -H \"Content-Type: application/octet-stream\"`"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete an API",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis/:apiname",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis",
+								":apiname"
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the unique API Name here"
+								}
+							]
+						},
+						"description": "  Make sure all revisions of an API are removed before going ahead and undeploying an API\n\n`curl -v -u username:password http://localhost:8080/v1/organizations/<orgname>/apis/<api you want to delete> -X DELETE`"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Shared Flows",
+			"item": [
+				{
+					"name": "List Shared Flows",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/sharedflows",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"sharedflows"
+							]
+						},
+						"description": "https://apidocs.apigee.com/shared-flow-api/apis/get/organizations/%7Borg_name%7D/sharedflows"
+					},
+					"response": []
+				},
+				{
+					"name": "Shared Flow details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/sharedflows/:sharedflow",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"sharedflows",
+								":sharedflow"
+							],
+							"variable": [
+								{
+									"key": "sharedflow",
+									"value": "",
+									"description": "Enter the shared flow name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/shared-flow-api/apis/get/organizations/%7Borg_name%7D/sharedflows/%7Bshared_flow_name%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "Shared Flow deployments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/sharedflows/:sharedflow/revisions/:revision/deployments",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"sharedflows",
+								":sharedflow",
+								"revisions",
+								":revision",
+								"deployments"
+							],
+							"variable": [
+								{
+									"key": "sharedflow",
+									"value": "",
+									"description": "Enter the shared flow name"
+								},
+								{
+									"key": "revision",
+									"value": "",
+									"description": "Enter the revision number"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/shared-flow-api/apis/get/organizations/%7Borg_name%7D/sharedflows/%7Bshared_flow_name%7D/revisions/%7Brevision_number%7D/deployments"
+					},
+					"response": []
+				},
+				{
+					"name": "Undeploy a Shared Flow",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/sharedflows/:sharedflow/revisions/:revision/deployments",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"sharedflows",
+								":sharedflow",
+								"revisions",
+								":revision",
+								"deployments"
+							],
+							"variable": [
+								{
+									"key": "sharedflow",
+									"value": "",
+									"description": "Enter the shared flow name"
+								},
+								{
+									"key": "revision",
+									"value": "",
+									"description": "Enter the revision number"
+								}
+							]
+						},
+						"description": "  List the keystores in the environment"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Shared Flow",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/sharedflows/:sharedflow",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"sharedflows",
+								":sharedflow"
+							],
+							"variable": [
+								{
+									"key": "sharedflow",
+									"value": "",
+									"description": "Enter the shared flow name"
+								}
+							]
+						},
+						"description": "  List the keystores in the environment"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Apps",
+			"item": [
+				{
+					"name": "Developer App",
+					"item": [
+						{
+							"name": "Developer App Details Get",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/developers/:devemail/apps/:appname",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"developers",
+										":devemail",
+										"apps",
+										":appname"
+									],
+									"variable": [
+										{
+											"key": "devemail",
+											"value": "",
+											"description": "Enter the developer email"
+										},
+										{
+											"key": "appname",
+											"value": "",
+											"description": "Enter the unique App name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete app credentials",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Accept",
+										"value": "application/xml"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers/:devemail/apps/:appname/keys/:key",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"developers",
+										":devemail",
+										"apps",
+										":appname",
+										"keys",
+										":key"
+									],
+									"variable": [
+										{
+											"key": "devemail",
+											"value": "",
+											"description": "Enter the developer email"
+										},
+										{
+											"key": "appname",
+											"value": "",
+											"description": "Enter the unique App name"
+										},
+										{
+											"key": "key",
+											"value": "",
+											"description": "Enter the consumer key string for the API key"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "List apps ",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apps",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apps"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "approved",
+									"description": "Optional. Values = \"approved\" or \"revoked\"",
+									"disabled": true
+								},
+								{
+									"key": "startKey",
+									"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+									"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+									"disabled": true
+								},
+								{
+									"key": "count",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "expand",
+									"value": "true",
+									"disabled": true
+								}
+							]
+						},
+						"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+					},
+					"response": []
+				},
+				{
+					"name": "List a Developers Apps",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers/:dev_email/apps?expand=true",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"developers",
+								":dev_email",
+								"apps"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "true",
+									"description": "Optional. Set to true to expand the results. This query parameter does not work if you use the count or startKey query parameters."
+								},
+								{
+									"key": "count",
+									"value": null,
+									"description": "Optional.\n\nThis parameter can be used with Apigee Edge for Public Cloud only.\n\nLimits the list to the number you specify. The limit is 100. Use with the startKey parameter to provide more targeted filtering.",
+									"disabled": true
+								},
+								{
+									"key": "startKey",
+									"value": null,
+									"description": "Optional.\n\nThis parameter can be used with Apigee Edge for Public Cloud only.\n\nTo filter the keys that are returned, enter the name of a company app that the list will start with. For example, if the an unfiltered list returns:\n\ndevapp1\ndevapp2\ndevapp3\n\nThen, if your startKey is devapp2, the returned list will be:\n\ndevapp2\ndevapp3",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "dev_email",
+									"value": "david.freeman@sonrai.com.au",
+									"description": "Enter the developer email"
+								}
+							]
+						},
+						"description": "Lists all apps created by a developer in an organization, and optionally provides an expanded view of the apps. All time values in the response are UNIX times. You can specify either the developer's email address or Edge ID.\nApigee recommends that you use the developer's email address when calling this API. Developer IDs are generated internally by Apigee and are not guaranteed to stay the same over time. \nA maximum of 100 developers are returned per API call.\nYou can paginate the list of companies returned using the startKey and count query parameters.\n \nDocumentation ref: https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/developers/%7Bdeveloper_email_or_id%7D/apps"
+					},
+					"response": []
+				},
+				{
+					"name": "App details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apps/:appid",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apps",
+								":appid"
+							],
+							"variable": [
+								{
+									"key": "appid",
+									"value": "0207d728-0c74-458b-a97b-c0627a7ee079",
+									"description": "Enter the App ID"
+								}
+							]
+						},
+						"description": "  List out an app details"
+					},
+					"response": []
+				},
+				{
+					"name": "Add app credentials",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<CredentialRequest>  \n            <Attributes/>\n            <ConsumerKey>_key_</ConsumerKey>\n            <ConsumerSecret>_secret_</ConsumerSecret>\n            <ApiProducts>\n            </ApiProducts>\n            <Scopes/>\n</CredentialRequest>\n"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers/:dev_email/apps/:appid/keys/create",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"developers",
+								":dev_email",
+								"apps",
+								":appid",
+								"keys",
+								"create"
+							],
+							"variable": [
+								{
+									"key": "dev_email",
+									"value": "david.freeman@sonrai.com.au",
+									"description": "Enter the developer email"
+								},
+								{
+									"key": "appid",
+									"value": "0207d728-0c74-458b-a97b-c0627a7ee079",
+									"description": "Enter the App ID"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Total Traffic for Developer Apps",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/stats/developer_app?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/03/2019%2023:59",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"stats",
+								"developer_app"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "(developer_app%20eq%20'Forecast-Weather-App')",
+									"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific developer app name\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+									"disabled": true
+								},
+								{
+									"key": "select",
+									"value": "sum(message_count)",
+									"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+								},
+								{
+									"key": "timeRange",
+									"value": "12/01/2019%2000:00~12/03/2019%2023:59",
+									"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+								}
+							]
+						},
+						"description": "Average transactions per second (across all API calls, including errors) through the API in a given period of time.  \nUse the analytics metrics API to gather detailed metrics.\n\nDocumentation reference: [https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance](https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "List API Products",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apiproducts",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apiproducts"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "true",
+									"description": "Use this parameter to get the details on all API Products",
+									"disabled": true
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apiproducts-0"
+					},
+					"response": []
+				},
+				{
+					"name": "API Product Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apiproducts/:product",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apiproducts",
+								":product"
+							],
+							"variable": [
+								{
+									"key": "product",
+									"value": "Public_Product",
+									"description": "Enter API Product name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apiproducts/%7Bapiproduct_name%7D-0"
+					},
+					"response": []
+				},
+				{
+					"name": "Total Traffic for API Products",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/stats/api_product?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/06/2019%2023:59",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"stats",
+								"api_product"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "(apiproxy%20eq%20'api-consumption-v1')",
+									"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific API proxy used in the product\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+									"disabled": true
+								},
+								{
+									"key": "select",
+									"value": "sum(message_count)",
+									"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+								},
+								{
+									"key": "timeRange",
+									"value": "12/01/2019%2000:00~12/06/2019%2023:59",
+									"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+								}
+							]
+						},
+						"description": "Total traffic over a given period (across all API calls, including errors) for all API Products.\nUse the filter query param for refining search results to particular proxies, verbs or call types.\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance\n\nStats reference: https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/stats"
+					},
+					"response": []
+				},
+				{
+					"name": "API Product Creation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\" : \"helloworld-beta\",\r\n  \"displayName\": \"helloworld beta\",\r\n  \"approvalType\": \"auto\",\r\n  \"attributes\": [\r\n    {\r\n      \"name\": \"access\",\r\n      \"value\": \"{public, private, or internal}\"\r\n    }\r\n  ],\r\n  \"environments\": [\"test\"],\r\n  \"proxies\": [\"helloworld\"]\r\n}"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/apiproducts",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"apiproducts"
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/apiproducts"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Developers",
+			"item": [
+				{
+					"name": "Developer List",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"developers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Developer details",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": "application/json or application/xml",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers/:devemail",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"developers",
+								":devemail"
+							],
+							"variable": [
+								{
+									"key": "devemail",
+									"value": "david.freeman@sonrai.com.au",
+									"description": "Enter the developer email"
+								}
+							]
+						},
+						"description": "Returns the profile for a developer by email address or ID. All time values are UNIX time values. The profile includes the developer's email address, ID, name, and other information.\r\nNote the following:\r\nWith Apigee Edge for Public Cloud, the response includes only the first **100** apps.\r\nApigee recommends that you use the developer's email address when calling this API. Developer IDs are generated internally by Apigee and are not guaranteed to stay the same over time."
+					},
+					"response": []
+				},
+				{
+					"name": "List Developers and details",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers?expand=true",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"developers"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "true",
+									"description": "Optional. Set to true to list developers exanded with details."
+								},
+								{
+									"key": "count",
+									"value": "100",
+									"description": "Optional.\n\nNote: This parameter can be used with Apigee Edge for Public Cloude only.\n\nLimits the list to the number you specify. Use with the startKey parameter to provide more targeted filtering. The limit is 1000.",
+									"disabled": true
+								},
+								{
+									"key": "startKey",
+									"value": "",
+									"description": "Optional.\n\nNote: This parameter can be used with Apigee Edge for Public Cloud only.\n\nTo filter the keys that are returned, enter the email of a developer that the list will start with. For example, if the an unfiltered list returns:\n\nwestley@example.com\nfezzik@example.com\nbuttercup@example.com\n\nand your startKey is fezzik@example.com, the returned list will be\n\nfezzik@example.com\nbuttercup@example.com",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lists all developers and their details (e.g. their apps) in an organization by email address. This call does not list any company developers who are a part of the designated organization.\r\n\r\nWith Apigee Edge for Public Cloud:\r\nA maximum of **1000** developers are returned per API call.\r\nYou can paginate the list of companies returned using the startKey and count query parameters"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Total Traffic for Developers (email)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{password}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{username}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/stats/developer_email?select=sum(message_count)&timeRange=12/01/2019%2000:00~12/06/2019%2023:59",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"stats",
+								"developer_email"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "(developer_email%20eq%20'david.freeman@sonrai.com.au')",
+									"description": "Filters on various properties (e.g. filter=(request_verb%20in%20'POST','PUT'), and in sample value - the specific developer email\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#filteringresults\nhttps://docs.apigee.com/api-platform/analytics/analytics-reference#filters",
+									"disabled": true
+								},
+								{
+									"key": "select",
+									"value": "sum(message_count)",
+									"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form.\n\nhttps://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance#specifying-the-metrics-to-return"
+								},
+								{
+									"key": "timeRange",
+									"value": "12/01/2019%2000:00~12/06/2019%2023:59",
+									"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+								}
+							]
+						},
+						"description": "Total traffic over a given period (across all API calls, including errors) for all API Products.\nUse the filter query param for refining search results to particular proxies, verbs or call types.\n\nDocumentation reference: https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Developer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<Developer>\n  <Email>thisisnottheemailyourelookingfor@sonrai.com.au</Email>\n  <FirstName>Paddy</FirstName>\n  <LastName>OBrien</LastName>\n  <UserName>doh</UserName>\n  <OrganizationName>Apigee</OrganizationName>\n  <Status>active</Status>\n  <Attributes/>\n</Developer>"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/developers",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"developers"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Monetization",
+			"item": [
+				{
+					"name": "Company",
+					"item": [
+						{
+							"name": "List companies",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies"
+									],
+									"query": [
+										{
+											"key": "expand",
+											"value": "true",
+											"description": "Optional. Values = \"true\" or \"false\"",
+											"disabled": true
+										},
+										{
+											"key": "startKey",
+											"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+											"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+											"disabled": true
+										},
+										{
+											"key": "count",
+											"value": "",
+											"disabled": true
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Company details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/:company-name",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										":company-name"
+									],
+									"query": [
+										{
+											"key": "startKey",
+											"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+											"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+											"disabled": true
+										},
+										{
+											"key": "count",
+											"value": null,
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Add company",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"new_team\",\r\n  \"displayName\": \"New Team\",\r\n  \"attributes\": [\r\n    { \"name\": \"ADMIN_EMAIL\", \"value\": \"david.freeman@sonrai.com.au\" },\r\n    { \"name\": \"partner\", \"value\": \"yes\" }\r\n  ]\r\n}"
+								},
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										""
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Change company details",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"new_team\",\r\n  \"displayName\": \"New Team\",\r\n  \"attributes\": [\r\n    {\r\n                    \"name\": \"ADMIN_EMAIL\",\r\n                    \"value\": \"david.freeman@sonrai.com.au\"\r\n    },\r\n    { \"name\": \"partner\", \"value\": \"yes\" }\r\n  ]\r\n}"
+								},
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/:company-name",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										":company-name"
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "new_team",
+											"description": "Enter the company name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Company Apps",
+					"item": [
+						{
+							"name": "List company apps",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/:company-name/apps?expand=true",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"apps"
+									],
+									"query": [
+										{
+											"key": "startKey",
+											"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+											"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+											"disabled": true
+										},
+										{
+											"key": "count",
+											"value": "",
+											"disabled": true
+										},
+										{
+											"key": "expand",
+											"value": "true"
+										}
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Company apps details",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/:company-name/apps/:app-name",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"apps",
+										":app-name"
+									],
+									"query": [
+										{
+											"key": "startKey",
+											"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+											"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+											"disabled": true
+										},
+										{
+											"key": "count",
+											"value": null,
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										},
+										{
+											"key": "app-name",
+											"value": "my_app_2024",
+											"description": "Enter the company app name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Company app",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/xml"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"apiproducts\": [\n    \"myproduct\"\n  ],\n  \"attributes\": [\n    {\n      \"name\": \"ADMIN_EMAIL\",\n      \"value\": \"david.freeman@sonrai.com.au\"\n    },\n    {\n      \"name\": \"MINT_BILLING_TYPE\",\n      \"value\": \"POSTPAID\"\n    }\n  ],\n  \"callbackUrl\": \"example.com\",\n  \"name\": \"myapp\",\n  \"scopes\": [],\n  \"status\": \"approved\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/companies/{{company}}/apps",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"companies",
+										"{{company}}",
+										"apps"
+									]
+								},
+								"description": "[https://apidocs.apigee.com/docs/company-apps/1/routes/organizations/{org_name}/companies/{company_name}/apps/post](https://apidocs.apigee.com/docs/company-apps/1/routes/organizations/%7Borg_name%7D/companies/%7Bcompany_name%7D/apps/post)"
+							},
+							"response": []
+						},
+						{
+							"name": "Update Company app",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"appFamily\": \"default\",\n    \"attributes\": [\n        {\n            \"name\": \"DisplayName\",\n            \"value\": \"many-products-and-keys\"\n        },\n        {\n            \"name\": \"Notes\",\n            \"value\": \"Mix of many products and keys in various approval states\"\n        }\n    ],\n    \"callbackUrl\": \"\",\n    \"companyName\": \"sonrai_company\",\n    \"credentials\": [\n        {\n            \"apiProducts\": [\n                {\n                    \"apiproduct\": \"Forecast1_0\",\n                    \"status\": \"approved\"\n                },\n                {\n                    \"apiproduct\": \"MyAPI1_0\",\n                    \"status\": \"approved\"\n                },\n                {\n                    \"apiproduct\": \"Insights1_0\",\n                    \"status\": \"approved\"\n                },\n                {\n                    \"apiproduct\": \"SocialGalactic1_0\",\n                    \"status\": \"approved\"\n                }\n            ],\n            \"attributes\": [],\n            \"scopes\": [],\n            \"status\": \"approved\"\n        },\n        {\n            \"apiProducts\": [\n                {\n                    \"apiproduct\": \"Forecast1_0\",\n                    \"status\": \"approved\"\n                },\n                {\n                    \"apiproduct\": \"UnauthorizedTV1_0\",\n                    \"status\": \"approved\"\n                }\n            ],\n            \"attributes\": [],\n            \"scopes\": [],\n            \"status\": \"approved\"\n        }\n    ],\n    \"name\": \"many_products_and_keys\",\n    \"scopes\": [],\n    \"status\": \"approved\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/companies/:company-name/apps/:app-name",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"apps",
+										":app-name"
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										},
+										{
+											"key": "app-name",
+											"value": "many_products_and_keys",
+											"description": "Enter the company app name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Company app API Keys",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/companies/:company-name/apps/:app-name/keys/:consumer-key",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"apps",
+										":app-name",
+										"keys",
+										":consumer-key"
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										},
+										{
+											"key": "app-name",
+											"value": "my_app",
+											"description": "Enter the app name"
+										},
+										{
+											"key": "consumer-key",
+											"value": "ajIegN4hMNsZbltfpSVIsAfpipCDvofe",
+											"description": "Enter the API consumer key"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Company app API Products",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/companies/:company-name/apps/:app-name/keys/:consumer-key/apiproducts/:product-name?action=approve",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"apps",
+										":app-name",
+										"keys",
+										":consumer-key",
+										"apiproducts",
+										":product-name"
+									],
+									"query": [
+										{
+											"key": "action",
+											"value": "approve"
+										}
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										},
+										{
+											"key": "app-name",
+											"value": "my_app",
+											"description": "Enter the app name"
+										},
+										{
+											"key": "consumer-key",
+											"value": "ajIegN4hMNsZbltfpSVIsAfpipCDvofe",
+											"description": "Enter the API consumer key"
+										},
+										{
+											"key": "product-name",
+											"value": "Insights",
+											"description": "Enter the product name"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Remove Company app API Products",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/companies/:company-name/apps/:app-name/keys/:consumer-key/apiproducts/:product-name",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"organizations",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"apps",
+										":app-name",
+										"keys",
+										":consumer-key",
+										"apiproducts",
+										":product-name"
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										},
+										{
+											"key": "app-name",
+											"value": "many_products_and_keys",
+											"description": "Enter the app name"
+										},
+										{
+											"key": "consumer-key",
+											"value": "cLAGscAp7KL0brJSVI2zDk9UR8nhef10",
+											"description": "Enter the API consume key"
+										},
+										{
+											"key": "product-name",
+											"value": "Forecast1_0",
+											"description": "Enter the product name"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Company Developers",
+					"item": [
+						{
+							"name": "List company developers",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/:company-name/developers",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										":company-name",
+										"developers"
+									],
+									"query": [
+										{
+											"key": "startKey",
+											"value": "ffd1b52a-2535-4759-a629-bf103dc6ab22",
+											"description": "Use the appId to paginate to the next list (use if there are over 1000 apps).",
+											"disabled": true
+										},
+										{
+											"key": "count",
+											"value": null,
+											"disabled": true
+										}
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Add company developers",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"developer\": [\r\n    {\r\n      \"email\": \"david.freeman@sonrai.com.au\",\r\n      \"role\": \"Judge Dredd\"\r\n    }\r\n  ]\r\n}"
+								},
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/:company-name",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										":company-name"
+									],
+									"variable": [
+										{
+											"key": "company-name",
+											"value": "sonrai_company",
+											"description": "Enter the company name"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete company developers",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{token}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/companies/best_team/developers/:devemail",
+									"protocol": "https",
+									"host": [
+										"api",
+										"enterprise",
+										"apigee",
+										"com"
+									],
+									"path": [
+										"v1",
+										"o",
+										"{{org}}",
+										"companies",
+										"best_team",
+										"developers",
+										":devemail"
+									],
+									"variable": [
+										{
+											"key": "devemail",
+											"value": "david.freeman@sonrai.com.au",
+											"description": "Enter the developer email"
+										}
+									]
+								},
+								"description": "add expand=true to the QS to get more info\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apps-1"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "KVM",
+			"item": [
+				{
+					"name": "List KVMs in an environment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/keyvaluemaps",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"keyvaluemaps"
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keyvaluemaps"
+					},
+					"response": []
+				},
+				{
+					"name": "List KVMs for an API proxy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis/:apiname/keyvaluemaps",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis",
+								":apiname",
+								"keyvaluemaps"
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the API name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apis/%7Bapi_name%7D/keyvaluemaps"
+					},
+					"response": []
+				},
+				{
+					"name": "KVM details in an API proxy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/apis/:apiname/keyvaluemaps/:kvm",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"apis",
+								":apiname",
+								"keyvaluemaps",
+								":kvm"
+							],
+							"variable": [
+								{
+									"key": "apiname",
+									"value": "",
+									"description": "Enter the API name"
+								},
+								{
+									"key": "kvm",
+									"value": "",
+									"description": "Enter the KVM name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/apis/%7Bapi_name%7D/keyvaluemaps/%7Bmap_name%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "KVM details in an environment",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/keyvaluemaps/:kvm",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"keyvaluemaps",
+								":kvm"
+							],
+							"variable": [
+								{
+									"key": "kvm",
+									"value": "",
+									"description": "Enter the KVM name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keyvaluemaps/%7Bmap_name%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "KVM Delete (Entire KVM)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/keyvaluemaps/:kvm",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"keyvaluemaps",
+								":kvm"
+							],
+							"variable": [
+								{
+									"key": "kvm",
+									"value": "",
+									"description": "Enter the KVM name"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api-reference/content/keyvalue-maps-management-api",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Organizations",
+			"item": [
+				{
+					"name": "Organisation details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api/organizations-0",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Environments",
+			"item": [
+				{
+					"name": "Create New ENV in ORG",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<Environment name=\"dev\"/>"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"environments"
+							]
+						},
+						"description": "This activitiy is reserved for Google when using Apigee SaaS\r\n  Update {{org}} and {{ENV}} variables as necessary to create a new environment"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Environments",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments/{{env}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"environments",
+								"{{env}}"
+							]
+						},
+						"description": "  Updates a specific environment in an organization.Descriptionn could be updated using the same.\n\n`curl -u user:passwd \"http://localhost:8080/v1/organizations/{{org}}/environments/{{ENV}}\" `"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Environment",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments/{{env}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"environments",
+								"{{env}}"
+							]
+						},
+						"description": "  Deletes a specific environment in an organization.\n\n`curl \"http://localhost:8080/v1/organizations/{ORG}/environments/{ENV}\" -X DELETE -u user:passwd `"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Keystores and Truststores",
+			"item": [
+				{
+					"name": "List Keystores",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/keystores",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"keystores"
+							]
+						},
+						"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores"
+					},
+					"response": []
+				},
+				{
+					"name": "Keystore or Truststore Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/keystores/:keystore",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"keystores",
+								":keystore"
+							],
+							"variable": [
+								{
+									"key": "keystore",
+									"value": "",
+									"description": "Enter keystore name"
+								}
+							]
+						},
+						"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores/%7Bkeystore_name%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "Test a Keystore or Truststore",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"host\": \"{hostName}\",\r\n    \"port\": \"{tlsPortNumber}\",\r\n    \"connectionTimeout\": \"3000\",\r\n    \"targetEndpointConfiguration\": {\r\n      \"clientAuthEnabled\": \"{true | false}\",\r\n      \"keyStore\": \"{keystoreName}\",\r\n      \"keyAlias\": \"{keyStoreAlias}\",\r\n      \"trustStore\": \"{tuststoreName}\",\r\n      \"ciphers\": [ \"{cipher1}\",\"{cipher2}\", ...],\r\n      \"protocols\": [\"{protocol1}\",\"{protocol2}\", ... ]\r\n    }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/testssl",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"testssl"
+							]
+						},
+						"description": "Test a specific keystore\n\n[https://apidocs.apigee.com/management/apis/get/organizations/{org_name}/environments/{env_name}/keystores/{keystore_name}](https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores/%7Bkeystore_name%7D)"
+					},
+					"response": []
+				},
+				{
+					"name": "Export a certificate from a Keystore",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/keystores/:keystore/cert/:certname/export",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"keystores",
+								":keystore",
+								"cert",
+								":certname",
+								"export"
+							],
+							"variable": [
+								{
+									"key": "keystore",
+									"value": "",
+									"description": "Enter the keystore name"
+								},
+								{
+									"key": "certname",
+									"value": "",
+									"description": "Enter the TLS certificate name to export"
+								}
+							]
+						},
+						"description": "List the keystores in the environment\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/keystores/%7Bkeystore_name%7D/certs/%7Bcert_name%7D/export"
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api-reference/content/keystores-and-truststores",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "TargetServers",
+			"item": [
+				{
+					"name": "List Target Servers",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/targetservers",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"targetservers"
+							]
+						},
+						"description": "List all the target servers for the org and env\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/targetservers"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Target Server",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "content-type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"10.1.124.41\",\n    \"isEnabled\": true,\n    \"name\": \"SpeechTest\",\n    \"port\": 18080\n}"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/targetservers",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"targetservers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Target Servers Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/targetservers/:targetserver",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"targetservers",
+								":targetserver"
+							],
+							"variable": [
+								{
+									"key": "targetserver",
+									"value": "MyTargetServer",
+									"description": "Enter target server name"
+								}
+							]
+						},
+						"description": "List all the target servers for the org and env\r\n\r\n  https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/targetservers"
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api/api_resources/51-targetservers",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "VirtualHosts",
+			"item": [
+				{
+					"name": "List Virtual Hosts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments/{{env}}/virtualhosts",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"virtualhosts"
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts"
+					},
+					"response": []
+				},
+				{
+					"name": "Virtual Host Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments/{{env}}/virtualhosts/:virtualhost",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"virtualhosts",
+								":virtualhost"
+							],
+							"variable": [
+								{
+									"key": "virtualhost",
+									"value": "",
+									"description": "Enter your virtual host name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/environments/%7Benv_name%7D/virtualhosts/%7Bvirtualhost_name%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "Add Virtual Host",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<VirtualHost name=\"default\">\n  <HostAliases>\n    <HostAlias>myorg- test.apigee.net</HostAlias>\n  </HostAliases>\n  <Interfaces/> \n  <Port>443</Port>\n</VirtualHost>"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/environments/{{env}}/virtualhosts",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"virtualhosts"
+							]
+						},
+						"description": "  Update {{org}} and {{ENV}} variables as necessary to create a new environment\n    \n  Update HostAlias\n   \n"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stats",
+			"item": [
+				{
+					"name": "Get API Metrics - TPS",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'api-consumption-v1')&select=tps&timeRange=05/01/2020%2000:00~05/31/2020%2023:59",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"stats",
+								"apiproxy"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "(apiproxy%20eq%20'api-consumption-v1')",
+									"description": "Filters on the specific API proxy used in the product. Enter the name of the API here in this format (apiproxy%20eq%20'API_NAME')"
+								},
+								{
+									"key": "select",
+									"value": "tps",
+									"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+								},
+								{
+									"key": "timeRange",
+									"value": "05/01/2020%2000:00~05/31/2020%2023:59",
+									"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+								}
+							]
+						},
+						"description": "Average transactions per second (across all API calls, including errors) through the API in a given period of time.  \nUse the analytics metrics API to gather detailed metrics.\n\nDocumentation reference: [https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance](https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get API Metrics - MessageCount",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'api-consumption-v1')&select=sum(message_count)&timeRange=05/01/2020%2000:00~05/31/2020%2023:59",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"stats",
+								"apiproxy"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "(apiproxy%20eq%20'api-consumption-v1')",
+									"description": "Enter the name of the API here in this format (apiproxy%20eq%20'API_NAME')"
+								},
+								{
+									"key": "select",
+									"value": "sum(message_count)",
+									"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+								},
+								{
+									"key": "timeRange",
+									"value": "05/01/2020%2000:00~05/31/2020%2023:59",
+									"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+								}
+							]
+						},
+						"description": "Total number of messages (API calls, including errors) through the API in a given period of time.  \nUse the analytics metrics API to gather detailed metrics.\n\nDocumentation reference: [https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance](https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get API Metrics - Error Count",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/environments/{{env}}/stats/apiproxy?filter=(apiproxy%20eq%20'api-consumption-v1')&select=sum(is_error)&timeRange=05/01/2020%2000:00~05/31/2020%2023:59",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"environments",
+								"{{env}}",
+								"stats",
+								"apiproxy"
+							],
+							"query": [
+								{
+									"key": "filter",
+									"value": "(apiproxy%20eq%20'api-consumption-v1')",
+									"description": "Enter the name of the API here in this format (apiproxy%20eq%20'API_NAME')"
+								},
+								{
+									"key": "select",
+									"value": "sum(is_error)",
+									"description": "Use the select query parameter to specify the metrics to retrieve, and an optional aggregation function, in the form."
+								},
+								{
+									"key": "timeRange",
+									"value": "05/01/2020%2000:00~05/31/2020%2023:59",
+									"description": "Use the timeRange query paramater to specify the time period (US format), in the form:\nMM/DD/YYYY%20HH:MM~MM/DD/YYYY%20HH:MM\nDo not use 24:00 as the time because it wraps around to 00:00. Use 23:59 instead."
+								}
+							]
+						},
+						"description": "Total number of messages (API calls, including errors) through the API in a given period of time.  \nUse the analytics metrics API to gather detailed metrics.\n\nDocumentation reference: [https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance](https://docs.apigee.com/api-platform/analytics/use-analytics-api-measure-api-program-performance)"
+					},
+					"response": []
+				}
+			],
+			"description": "Get statistics/metrics on your API Proxies, such as TPS, error counts and message counts"
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Create User in ORG",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \r\n   \"firstName\" : \"{first_name}\", \r\n   \"lastName\" : \"{last_name}\", \r\n   \"password\" : \"{new_pword}\", \r\n   \"emailId\" : \"{email_address}\" \r\n}"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/users",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"users"
+							]
+						},
+						"description": "Adds a user to the org specified.\n\nSee body for values that are required\n\nhttps://apidocs.apigee.com/management/apis/post/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Add user as Orgadmin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<Roles><Role name=\"orgadmin\"/></Roles>"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/users/:useremail/userroles/",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"users",
+								":useremail",
+								"userroles",
+								""
+							],
+							"variable": [
+								{
+									"key": "useremail",
+									"value": "",
+									"description": "Enter in your user email here to add as Org Admin"
+								}
+							]
+						},
+						"description": "  Replace <org-name> with Organization name and <user-email> with users email\n\n  If A different Role needs to be created the available options are\n\n  -  orgadmin\n    -  opsadmin\n    -  user\n    -  businessuser\n    \n  All have default permissions and full access to all entitires (APIs,API Products,Apps, Developers and Reports)\n\n  More complex roles and permissions can be configured using the RBAC API"
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api-reference/content/user-api",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Alert Rules",
+			"item": [
+				{
+					"name": "List alert rules and details in org",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://apimonitoring.enterprise.apigee.com/alerts?org={{org}}",
+							"protocol": "https",
+							"host": [
+								"apimonitoring",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"alerts"
+							],
+							"query": [
+								{
+									"key": "org",
+									"value": "{{org}}"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/api-monitoring/apis/get/alerts"
+					},
+					"response": []
+				},
+				{
+					"name": "Alert rule details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://apimonitoring.enterprise.apigee.com/alerts/{{ALERT_ID}}?org={{org}}",
+							"protocol": "https",
+							"host": [
+								"apimonitoring",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"alerts",
+								"{{ALERT_ID}}"
+							],
+							"query": [
+								{
+									"key": "org",
+									"value": "{{org}}"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/api-monitoring/apis/get/alerts/%7Balert_id%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "Update an Alert Rule",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"type": "text",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"organization\": \"orgName\",\r\n  \"environment\": \"envName\",\r\n  \"name\": \"Alert name\",\r\n  \"enabled\": true | false,\r\n  \"description\": \"Alert description.\",\r\n  \"playbook\": \"Consumer message.\",\r\n  \"conditions\": [\r\n    {\r\n      \"description\": \"Condition description\",\r\n      \"dimensions\": {\r\n        \"org\": \"orgName\",\r\n        \"env\": \"envName\",\r\n        \"proxy\": \"proxyName\",\r\n        \"statusCode\": \"httpStatusCode\"\r\n      },\r\n      \"metric\": \"rate|count|tps|totalLatency|targetLatency\",\r\n      \"threshold\": thresholdVale,\r\n      \"durationSeconds\": inSeconds,\r\n      \"comparator\": \"gt|lt|gte|lte|==\"\r\n    }\r\n  ],\r\n  \"notifications\": [\r\n    {\r\n      \"channel\": \"email|pagerduty|slack|webhook\",\r\n      \"destination\": \"dest\"\r\n    }\r\n  ],\r\n  \"reportEnabled\": true|false,\r\n  \"throttleIntervalSeconds\": numSeconds,\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://apimonitoring.enterprise.apigee.com/alerts/:alertid?org={{org}}",
+							"protocol": "https",
+							"host": [
+								"apimonitoring",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"alerts",
+								":alertid"
+							],
+							"query": [
+								{
+									"key": "org",
+									"value": "{{org}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "alertid",
+									"value": "",
+									"description": "Enter the Alert ID here"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/api-monitoring/apis/put/alerts/%7Balert_id%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Alert Rule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"organization\": \"my-org\",\r\n  \"name\": \"Sonrai-alert\",\r\n  \"description\": \"4xx alerts at 5 per 5 minutes\",\r\n  \"environment\": \"dev\",\r\n  \"enabled\": true,\r\n  \"conditions\": [\r\n    {\r\n      \"description\": \"Condition description\",\r\n      \"dimensions\": {\r\n        \"org\": \"my-org\",\r\n        \"env\": \"dev\",\r\n        \"proxy\": \"ALL\",\r\n        \"region\": \"ANY\",\r\n        \"statusCode\": \"4xx\"\r\n      },\r\n      \"metric\": \"count\",\r\n      \"threshold\": 5,\r\n      \"durationSeconds\": 300,\r\n      \"comparator\": \"lt\"\r\n    }\r\n  ],\r\n  \"notifications\": [\r\n    {\r\n      \"channel\": \"pagerduty\",\r\n      \"destination\": \"R02423BNUWV7P4N8UOTCMES480ZVYFGJ\"\r\n    },\r\n    {\r\n      \"channel\": \"email\",\r\n      \"destination\": \"david.freeman@sonrai.com.au\"\r\n    }\r\n  ],\r\n  \"playbook\":\"http://acme.com/myplaybook.html\",\r\n  \"throttleIntervalSeconds\": 900,\r\n  \"reportEnabled\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://apimonitoring.enterprise.apigee.com/alerts",
+							"protocol": "https",
+							"host": [
+								"apimonitoring",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"alerts"
+							]
+						},
+						"description": "https://apidocs.apigee.com/api-monitoring/apis/post/alerts"
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api-monitoring/apis/post/alerts",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "User Roles",
+			"item": [
+				{
+					"name": "List roles in an organisation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/userroles",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"userroles"
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/userroles"
+					},
+					"response": []
+				},
+				{
+					"name": "Get permissions for a role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/userroles/:rolename/permissions",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"userroles",
+								":rolename",
+								"permissions"
+							],
+							"variable": [
+								{
+									"key": "rolename",
+									"value": "",
+									"description": "Enter role name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/permissions-0"
+					},
+					"response": []
+				},
+				{
+					"name": "Users associated to role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/userroles/:rolename/users",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"userroles",
+								":rolename",
+								"users"
+							],
+							"variable": [
+								{
+									"key": "rolename",
+									"value": "",
+									"description": "Enter role name"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/users"
+					},
+					"response": []
+				},
+				{
+					"name": "Add a new custom role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \r\n    \"role\" : [ { \"name\" : \"API Operator\" } ] \r\n}"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/userroles",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"userroles"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "david.freeman@sonrai.com.au",
+									"description": "Specify the email address of the user.",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Use the query parameter to add a user (by email id) to a role.\r\n\r\nhttps://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/users-0"
+					},
+					"response": []
+				},
+				{
+					"name": "Add permissions to a role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n \"resourcePermission\" : [ \r\n   {\r\n    \"path\" : \"/audits/organizations/*/apiproducts\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/apiproducts/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/applications\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/applications/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers/*/apps\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers/*/apps/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/users\",\r\n    \"permissions\" : [ \"get\"]\r\n   }\r\n   ]\r\n}"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/userroles/:rolename/resourcepermissions",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"userroles",
+								":rolename",
+								"resourcepermissions"
+							],
+							"variable": [
+								{
+									"key": "rolename",
+									"value": "",
+									"description": "Enter role name"
+								}
+							]
+						},
+						"description": "For details on the permission paths and the verbs/methods that can be used in those paths see; https://docs.apigee.com/api-platform/system-administration/permissions\r\n\r\nhttps://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/resourcepermissions"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a permission on a role",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/octet-stream"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n \"resourcePermission\" : [ \r\n   {\r\n    \"path\" : \"/audits/organizations/*/apiproducts\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/apiproducts/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/applications\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/applications/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers/*/apps\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/organizations/*/developers/*/apps/*\",\r\n    \"permissions\" : [ \"get\"]\r\n   },\r\n   {\r\n    \"path\" : \"/audits/users\",\r\n    \"permissions\" : [ \"get\"]\r\n   }\r\n   ]\r\n}"
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/userroles/:rolename/permissions/get?path=/blah",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"userroles",
+								":rolename",
+								"permissions",
+								"get"
+							],
+							"query": [
+								{
+									"key": "path",
+									"value": "/blah",
+									"description": "Resource path. For example: /applications"
+								}
+							],
+							"variable": [
+								{
+									"key": "rolename",
+									"value": "",
+									"description": "Enter role name"
+								}
+							]
+						},
+						"description": "For details on the permission paths and the verbs/methods that can be used in those paths see; https://docs.apigee.com/api-platform/system-administration/permissions\r\n\r\nhttps://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/resourcepermissions"
+					},
+					"response": []
+				},
+				{
+					"name": "Add a user to a role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/organizations/{{org}}/userroles/:rolename/users",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"organizations",
+								"{{org}}",
+								"userroles",
+								":rolename",
+								"users"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": "david.freeman@sonrai.com.au",
+									"description": "Specify the email address of the user.",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "rolename",
+									"value": "",
+									"description": "Enter role name"
+								}
+							]
+						},
+						"description": "Use the query parameter to add a user (by email id) to a role.\r\n\r\nhttps://apidocs.apigee.com/management/apis/post/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/users-0"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove user from a role",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/userroles/:rolename/users/:useremail",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"userroles",
+								":rolename",
+								"users",
+								":useremail"
+							],
+							"variable": [
+								{
+									"key": "rolename",
+									"value": "",
+									"description": "Enter role name"
+								},
+								{
+									"key": "useremail",
+									"value": "",
+									"description": "Enter users email"
+								}
+							]
+						},
+						"description": "Remove a user form a role.\r\n\r\nhttps://apidocs.apigee.com/management/apis/delete/organizations/%7Borg_name%7D/userroles/%7Brole_name%7D/users/%7Buser_email%7D"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete an organization userrole",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/users/:useremail/userroles/user?org={{org}}",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"users",
+								":useremail",
+								"userroles",
+								"user"
+							],
+							"query": [
+								{
+									"key": "org",
+									"value": "{{org}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "useremail",
+									"value": "",
+									"description": "Enter user's email"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "https://apidocs.apigee.com/api/user-roles",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Audit",
+			"item": [
+				{
+					"name": "Audit",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/audits/o/{{org}}/companies?expand=true&timeline=month",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"audits",
+								"o",
+								"{{org}}",
+								"companies"
+							],
+							"query": [
+								{
+									"key": "expand",
+									"value": "true"
+								},
+								{
+									"key": "timeline",
+									"value": "month"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cache",
+			"item": [
+				{
+					"name": "List caches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/e/{{env}}/caches",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"e",
+								"{{env}}",
+								"caches"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "OAuth",
+			"item": [
+				{
+					"name": "OAuth2 Token Details Get",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "https://api.enterprise.apigee.com/v1/o/{{org}}/oauth2/accesstokens/:tokenid",
+							"protocol": "https",
+							"host": [
+								"api",
+								"enterprise",
+								"apigee",
+								"com"
+							],
+							"path": [
+								"v1",
+								"o",
+								"{{org}}",
+								"oauth2",
+								"accesstokens",
+								":tokenid"
+							],
+							"variable": [
+								{
+									"key": "tokenid",
+									"value": "",
+									"description": "Enter the token ID"
+								}
+							]
+						},
+						"description": "https://apidocs.apigee.com/management/apis/get/organizations/%7Borg_name%7D/oauth2/accesstokens/%7Baccess_token%7D"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "org",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "env",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
