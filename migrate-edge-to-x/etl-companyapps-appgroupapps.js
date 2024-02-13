@@ -160,7 +160,8 @@ async function getApps(org, token, apigee_x_project, gcp_token, companyList) {
                             
                             //For loop to add in the API Products to the credentials in the status they should be from the original app.
                             for(const  [i, apiprod] of Object.entries(cred.apiProducts)) {
-                            
+                                //Set the prodData to add the API Product to the credentials based on the API Product in the original Edge app.
+                                var prodData = '{\n    "apiProducts": [\n"' + apiprod.apiproduct + '"\n]\n}';
                                 // POST add the API Products to AppGroup App credentials based on the original Company App API Products. 
                                 // This list will be appended to the existing list of associated API Products for this App Key. Duplicates will be ignored.
                                 let configAddProd = {
